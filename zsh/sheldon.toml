@@ -1,0 +1,21 @@
+# sheldon プラグイン設定ファイル
+# https://github.com/rossmacarthur/sheldon
+
+shell = "zsh"
+
+[plugins]
+# zsh-autosuggestions - コマンド履歴の自動補完
+zsh-autosuggestions = { github = "zsh-users/zsh-autosuggestions" }
+
+# zsh-syntax-highlighting - シンタックスハイライト
+zsh-syntax-highlighting = { github = "zsh-users/zsh-syntax-highlighting" }
+
+# zsh-z - ディレクトリジャンプ
+zsh-z = { github = "agkozak/zsh-z" }
+
+# fzf - ファジーファインダー
+fzf = { github = "junegunn/fzf", use = ["shell/*.zsh"] }
+
+# powerlevel10k - テーマ
+powerlevel10k = { github = "romkatv/powerlevel10k", use = ["powerlevel10k.zsh-theme"] }
+
