@@ -13,6 +13,7 @@ return {
         "cssls",
         "emmet_ls",
         "rust_analyzer",
+        "clangd",
         "yamlls",
         "jsonls",
       },

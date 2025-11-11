@@ -103,6 +103,12 @@ vim.lsp.config("rust_analyzer", {
   capabilities = capabilities,
 })
 
+-- C
+vim.lsp.config("clangd", {
+  on_attach = on_attach,
+  capabilities = capabilities,
+})
+
 -- YAML
 vim.lsp.config("yamlls", {
   on_attach = on_attach,
