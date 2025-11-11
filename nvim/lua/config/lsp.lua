@@ -1,6 +1,5 @@
 -- LSP設定ファイル
-
-local lspconfig = require("lspconfig")
+-- Ref: https://zenn.dev/ras96/articles/4d9d9493d29c06
 
 -- blink.cmpのLSP capabilitiesを取得
 local capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -30,59 +29,88 @@ local on_attach = function(client, bufnr)
   vim.keymap.set("n", "<leader>f", function()
     vim.lsp.buf.format({ async = true })
   end, opts)
+
+  -- 保存時に自動フォーマット
+  if client.supports_method("textDocument/formatting") then
+    vim.api.nvim_create_autocmd("BufWritePre", {
+      group = vim.api.nvim_create_augroup("LspFormat", { clear = false }),
+      buffer = bufnr,
+      callback = function()
+        vim.lsp.buf.format({ bufnr = bufnr, id = client.id, timeout_ms = 1000 })
+      end,
+    })
+  end
+
+  -- インライン補完の設定
+  if client.supports_method("textDocument/inlineCompletion") then
+    vim.lsp.inline_completion.enable(true, { bufnr = bufnr })
+    vim.keymap.set("i", "<Tab>", function()
+      if not vim.lsp.inline_completion.get() then
+        return "<Tab>"
+      end
+      -- close the completion popup if it's open
+      if vim.fn.pumvisible() == 1 then
+        return "<C-e>"
+      end
+    end, {
+      expr = true,
+      buffer = bufnr,
+      desc = "Accept the current inline completion",
+    })
+  end
 end
 
 -- Go
-lspconfig.gopls.setup({
+vim.lsp.config("gopls", {
   on_attach = on_attach,
   capabilities = capabilities,
 })
 
 -- TypeScript/JavaScript
-lspconfig.tsserver.setup({
+vim.lsp.config("ts_ls", {
   on_attach = on_attach,
   capabilities = capabilities,
 })
 
 -- Python
-lspconfig.pyright.setup({
+vim.lsp.config("pyright", {
   on_attach = on_attach,
   capabilities = capabilities,
 })
 
 -- HTML
-lspconfig.html.setup({
+vim.lsp.config("html", {
   on_attach = on_attach,
   capabilities = capabilities,
 })
 
 -- CSS
-lspconfig.cssls.setup({
+vim.lsp.config("cssls", {
   on_attach = on_attach,
   capabilities = capabilities,
 })
 
 -- Emmet (HTML/CSS)
-lspconfig.emmet_ls.setup({
+vim.lsp.config("emmet_ls", {
   on_attach = on_attach,
   capabilities = capabilities,
   filetypes = { "html", "css", "javascript", "javascriptreact", "typescript", "typescriptreact" },
 })
 
 -- Rust
-lspconfig.rust_analyzer.setup({
+vim.lsp.config("rust_analyzer", {
   on_attach = on_attach,
   capabilities = capabilities,
 })
 
 -- YAML
-lspconfig.yamlls.setup({
+vim.lsp.config("yamlls", {
   on_attach = on_attach,
   capabilities = capabilities,
 })
 
 -- JSON
-lspconfig.jsonls.setup({
+vim.lsp.config("jsonls", {
   on_attach = on_attach,
   capabilities = capabilities,
 })
