@@ -7,23 +7,34 @@ dotfiles やその他設定ファイルを管理するためのリポジトリ�
 このリポジトリには以下の設定ファイルが含まれています：
 
 - **wezterm**: ターミナルエミュレータの設定
+
   - `wezterm/wezterm.lua`: メイン設定ファイル
   - `wezterm/keybinds.lua`: キーバインド設定
   - `wezterm/background.lua`: 背景画像設定
   - `wezterm/background/change_bg.sh`: 背景画像切り替えスクリプト
 
 - **zsh**: シェル設定
-  - `zsh/.zshrc`: zsh設定ファイル（sheldon使用）
-  - `zsh/sheldon.toml`: sheldonプラグイン設定
 
-- **nvim**: NeoVim設定
+  - `zsh/.zshrc`: zsh 設定ファイル（sheldon 使用）
+  - `zsh/sheldon.toml`: sheldon プラグイン設定
+
+- **nvim**: NeoVim 設定
+
   - `nvim/init.lua`: エントリーポイント
   - `nvim/lua/config/`: 設定ファイル
-    - `lazy.lua`: lazy.nvim設定
-    - `lsp.lua`: LSP設定
+    - `lazy.lua`: lazy.nvim 設定
+    - `lsp.lua`: LSP 設定
     - `options.lua`: 基本設定
   - `nvim/lua/plugins/`: プラグイン設定（各プラグインごとにファイル分割）
   - `nvim/after/lsp/`: 言語サーバー上書き設定
+
+- **yazi**: TUI ファイルマネージャー設定
+
+  - `yazi/yazi.toml`: 基本設定（Neovim 統合設定含む）
+  - `yazi/keymap.toml`: キーバインド設定
+  - `yazi/theme.toml`: カラースキーム設定
+  - `yazi/init.lua`: 初期化スクリプト（プラグイン管理）
+  - `yazi/plugins/`: プラグインディレクトリ
 
 - **zellij**: ターミナルマルチプレクサ設定（設定ファイルは含まれていません）
 
@@ -33,9 +44,10 @@ dotfiles やその他設定ファイルを管理するためのリポジトリ�
 
 以下のツールがインストールされている必要があります：
 
-- [sheldon](https://github.com/rossmacarthur/sheldon) - zshプラグインマネージャー
+- [sheldon](https://github.com/rossmacarthur/sheldon) - zsh プラグインマネージャー
 - [wezterm](https://wezfurlong.org/wezterm/) - ターミナルエミュレータ
 - [nvim](https://neovim.io/) - エディタ
+- [yazi](https://github.com/sxyazi/yazi) - TUI ファイルマネージャー（オプション）
 - [zellij](https://zellij.dev/) - ターミナルマルチプレクサ（オプション）
 
 ### 自動セットアップ
@@ -50,8 +62,8 @@ dotfiles やその他設定ファイルを管理するためのリポジトリ�
 
 1. 必要なディレクトリの作成
 2. シンボリックリンクの作成
-3. sheldonのインストール確認と初期化
-4. lazy.nvimの自動インストール確認
+3. sheldon のインストール確認と初期化
+4. lazy.nvim の自動インストール確認
 
 ### 手動セットアップ
 
@@ -62,7 +74,7 @@ git clone https://github.com/Fukuemon/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ```
 
-#### 2. wezterm設定のセットアップ
+#### 2. wezterm 設定のセットアップ
 
 ```bash
 # 設定ディレクトリを作成
@@ -77,7 +89,7 @@ ln -sf ~/dotfiles/wezterm/background.lua ~/.config/wezterm/background.lua
 mkdir -p ~/.config/wezterm/background
 ```
 
-#### 3. zsh設定のセットアップ
+#### 3. zsh 設定のセットアップ
 
 ```bash
 # sheldonのインストール（Homebrewの場合）
@@ -91,7 +103,7 @@ ln -sf ~/dotfiles/zsh/sheldon.toml ~/.config/sheldon/plugins.toml
 sheldon lock --update
 ```
 
-#### 4. nvim設定のセットアップ
+#### 4. nvim 設定のセットアップ
 
 ```bash
 # 設定ディレクトリを作成
@@ -105,9 +117,25 @@ ln -sf ~/dotfiles/nvim/lua ~/.config/nvim/lua
 nvim
 ```
 
+#### 5. yazi 設定のセットアップ
+
+```bash
+# yaziのインストール（Homebrewの場合）
+brew install yazi
+
+# 設定ディレクトリを作成
+mkdir -p ~/.config/yazi
+
+# シンボリックリンクを作成
+ln -sf ~/dotfiles/yazi/yazi.toml ~/.config/yazi/yazi.toml
+ln -sf ~/dotfiles/yazi/keymap.toml ~/.config/yazi/keymap.toml
+ln -sf ~/dotfiles/yazi/theme.toml ~/.config/yazi/theme.toml
+ln -sf ~/dotfiles/yazi/init.lua ~/.config/yazi/init.lua
+```
+
 ## 使用方法
 
-### wezterm背景画像の切り替え
+### wezterm 背景画像の切り替え
 
 `wezterm/background/` ディレクトリに画像ファイルを配置し、以下のコマンドで背景画像を切り替えられます：
 
@@ -121,7 +149,7 @@ nvim
 ~/.config/wezterm/background/change_bg.sh
 ```
 
-### zshプラグインの管理
+### zsh プラグインの管理
 
 プラグインの追加・削除は `zsh/sheldon.toml` を編集し、以下のコマンドで更新します：
 
@@ -129,9 +157,9 @@ nvim
 sheldon lock --update
 ```
 
-### nvimプラグインの管理
+### nvim プラグインの管理
 
-プラグインの追加・削除は `nvim/init.lua` を編集します。lazy.nvimが自動的にプラグインをインストール・更新します。
+プラグインの追加・削除は `nvim/init.lua` を編集します。lazy.nvim が自動的にプラグインをインストール・更新します。
 
 プラグインの手動更新：
 
@@ -139,6 +167,68 @@ sheldon lock --update
 nvim
 # nvim内で :Lazy update を実行
 ```
+
+### yazi ファイルマネージャー
+
+Yazi は高速な TUI ファイルマネージャーです。以下のコマンドで起動できます：
+
+```bash
+yazi
+```
+
+#### Neovim との統合
+
+**Neovim から Yazi を開く:**
+
+以下のキーバインドで Yazi を開けます：
+
+- `<leader>-` または `<leader>fy`: 現在のファイルのディレクトリで Yazi を開く
+- `<leader>cw`: Neovim の作業ディレクトリで Yazi を開く
+- `<c-up>`: 最後の Yazi セッションを再開
+
+Yazi はフローティングウィンドウとして表示され、ファイルを選択すると Neovim で開けます。
+
+**Yazi から Neovim でファイルを開く:**
+
+以下の方法で Neovim でファイルを開けます：
+
+- `e`: 選択したファイルを Neovim で編集（エディタで開く）
+- `E`: 複数ファイルを選択して Neovim で編集
+- `<Enter>`: テキストファイルの場合、自動的に Neovim で開く（`yazi.toml` の設定による）
+- `o`: インタラクティブに開く方法を選択
+
+`yazi.toml` の `[opener]` セクションで、テキストファイルは自動的に Neovim で開くように設定されています。
+
+#### 基本的な操作
+
+- `h`: 親ディレクトリに移動
+- `l`: ディレクトリに入る / ファイルを開く
+- `j`/`k`: 上下に移動
+- `v`: ビジュアルモード（複数選択）
+- `c`: コピー
+- `x`: カット
+- `p`: ペースト
+- `d`: 削除
+- `e`: Neovim で編集
+- `E`: 複数ファイルを Neovim で編集
+- `o`: インタラクティブに開く
+- `q`: 終了
+
+#### プラグイン管理
+
+Yazi のプラグインは `yazi/plugins/` ディレクトリに配置します。
+
+1. プラグインの Lua ファイルを `yazi/plugins/` に配置
+2. `yazi/init.lua` でプラグインを読み込み
+
+例：
+
+```lua
+-- yazi/init.lua
+require("plugins.my-plugin")
+```
+
+詳細は [Yazi 公式ドキュメント](https://github.com/sxyazi/yazi) と [プラグイン公式ドキュメント](https://yazi-rs.github.io/docs/plugins) を参照してください。
 
 ## プラグイン一覧
 
@@ -156,13 +246,13 @@ nvim
 - `preservim/nerdtree` - ファイルツリー
 - `junegunn/fzf` - ファジーファインダー
 - `nvim-treesitter/nvim-treesitter` - シンタックスハイライト
-- `williamboman/mason.nvim` - LSPインストーラー
-- `neovim/nvim-lspconfig` - LSP設定
+- `williamboman/mason.nvim` - LSP インストーラー
+- `neovim/nvim-lspconfig` - LSP 設定
 - `saghen/blink.cmp` - 補完（blink.cmp）
 - `nvim-lualine/lualine.nvim` - ステータスライン
-- `lewis6991/gitsigns.nvim` - git gutter
+- `lewis6991/gitsigns.nvim` - Git gutter
+- `mikavilpas/yazi.nvim` - Yazi ファイルマネージャー統合
 
 ## ライセンス
 
 MIT
-

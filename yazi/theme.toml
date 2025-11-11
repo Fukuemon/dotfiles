@@ -1,0 +1,66 @@
+# Yaziテーマ設定
+
+[mgr]
+cwd = { fg = "#c9d1d9" }
+hint = { fg = "#58a6ff", bold = true }
+progress = { bg = "#58a6ff" }
+active = { fg = "#ffffff", bold = true }
+parent = { fg = "#8b949e" }
+normal = { fg = "#c9d1d9" }
+marked = { fg = "#f85149", bold = true }
+find_keyword = { fg = "#f85149", italic = true }
+find_position = { fg = "#58a6ff", bg = "#1f6feb", bold = true }
+current = { fg = "#ffffff", bg = "#1f6feb", bold = true }
+preview_label = { fg = "#ffffff", bg = "#1f6feb", bold = true }
+preview_border = { fg = "#30363d" }
+syntect_theme = ""
+
+[status]
+separator_open = " "
+separator_close = " "
+separator_style = { fg = "#30363d" }
+prefix = { fg = "#c9d1d9", bg = "#21262d", bold = true }
+suffix = { fg = "#c9d1d9", bg = "#21262d" }
+progress = { fg = "#58a6ff", bg = "#21262d" }
+permissions_t = { fg = "#c9d1d9", bg = "#21262d" }
+permissions_r = { fg = "#f85149", bg = "#21262d" }
+permissions_w = { fg = "#f85149", bg = "#21262d" }
+permissions_x = { fg = "#58a6ff", bg = "#21262d" }
+permissions_s = { fg = "#c9d1d9", bg = "#21262d" }
+
+[input]
+border = { fg = "#30363d" }
+title = { fg = "#c9d1d9" }
+value = { fg = "#c9d1d9" }
+selected = { reversed = true }
+
+[select]
+border = { fg = "#30363d" }
+active = { fg = "#c9d1d9" }
+inactive = { fg = "#8b949e" }
+
+[tasks]
+border = { fg = "#30363d" }
+title = { fg = "#c9d1d9" }
+all = { fg = "#58a6ff" }
+hovered = { fg = "#c9d1d9", underline = true }
+appended = { fg = "#f85149" }
+title_playing = { fg = "#58a6ff", bold = true }
+title_queued = { fg = "#8b949e" }
+title_done = { fg = "#3fb950" }
+title_failed = { fg = "#f85149" }
+title_paused = { fg = "#8b949e" }
+title_orphan = { fg = "#8b949e" }
+
+[notify]
+title_info = { fg = "#58a6ff" }
+title_warn = { fg = "#d29922" }
+title_error = { fg = "#f85149" }
+title_ok = { fg = "#3fb950" }
+
+[help]
+on = { fg = "#c9d1d9" }
+exec = { fg = "#58a6ff" }
+desc = { fg = "#8b949e" }
+hovered = { fg = "#ffffff", bold = true, underline = true }
+footer = { fg = "#8b949e" }

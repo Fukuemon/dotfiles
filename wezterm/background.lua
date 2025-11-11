@@ -14,7 +14,7 @@ local gradient_layer = {
       },
     },
   },
-  opacity = 0.8,
+  opacity = 1,
   width = "100%",
   height = "100%",
 }

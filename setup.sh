@@ -185,6 +185,50 @@ setup_nvim() {
     success "nvim設定のセットアップが完了しました"
 }
 
+# yazi設定のセットアップ
+setup_yazi() {
+    echo ""
+    echo "--- yazi設定のセットアップ ---"
+    
+    # yaziのインストール確認
+    if ! command -v yazi &> /dev/null; then
+        info "yaziがインストールされていません"
+        if command -v brew &> /dev/null; then
+            read -p "Homebrewでyaziをインストールしますか? (y/n): " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                brew install yazi
+                success "yaziをインストールしました"
+            else
+                info "yaziのインストールをスキップしました"
+            fi
+        else
+            info "yaziがインストールされていません。手動でインストールしてください"
+        fi
+    else
+        success "yaziは既にインストールされています"
+    fi
+    
+    # 設定ディレクトリが存在しない場合は作成
+    if [ ! -d "$HOME/.config/yazi" ]; then
+        mkdir -p "$HOME/.config/yazi"
+        success "yazi設定ディレクトリを作成しました"
+    fi
+    
+    # 既存のファイルをバックアップしてからシンボリックリンクを作成
+    create_symlink "$DOTFILES_DIR/yazi/yazi.toml" "$HOME/.config/yazi/yazi.toml"
+    create_symlink "$DOTFILES_DIR/yazi/keymap.toml" "$HOME/.config/yazi/keymap.toml"
+    create_symlink "$DOTFILES_DIR/yazi/theme.toml" "$HOME/.config/yazi/theme.toml"
+    create_symlink "$DOTFILES_DIR/yazi/init.lua" "$HOME/.config/yazi/init.lua"
+    
+    # プラグインディレクトリのシンボリックリンクを作成
+    if [ -d "$DOTFILES_DIR/yazi/plugins" ]; then
+        create_symlink "$DOTFILES_DIR/yazi/plugins" "$HOME/.config/yazi/plugins"
+    fi
+    
+    success "yazi設定のセットアップが完了しました"
+}
+
 # zellijのインストール確認（設定ファイルは作成しない）
 check_zellij() {
     echo ""
@@ -210,6 +254,7 @@ main() {
     setup_wezterm
     setup_zsh
     setup_nvim
+    setup_yazi
     check_zellij
     
     echo ""

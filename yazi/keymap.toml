@@ -1,0 +1,119 @@
+# Yaziキーマップ設定
+# Ref: https://minerva.mamansoft.net/2025-09-14-yazi-tui-file-manager-finder-replacement
+
+[mgr]
+# 基本操作
+"q" = "quit"
+"Q" = "quit --no-cwd-file"
+"<Esc>" = "escape"
+"<Enter>" = "open"
+"<Space>" = "toggle_selection"
+"<Backspace>" = "leave"
+"<Tab>" = "tab_switch 0"
+
+# 移動
+"h" = "leave"
+"l" = "enter"
+"j" = "move down"
+"k" = "move up"
+"<C-d>" = "leave"
+"<C-u>" = "leave"
+"<C-f>" = "leave"
+"<C-b>" = "leave"
+"<Home>" = "go home"
+"<End>" = "go end"
+"<PageUp>" = "leave"
+"<PageDown>" = "leave"
+
+# 検索
+"/" = "search fzf"
+"n" = "search_next"
+"N" = "search_prev"
+
+# 選択
+"v" = "visual_mode"
+"V" = "visual_mode --unset"
+"<C-a>" = "select_all --state=true"
+"<C-r>" = "select_all --state=none"
+
+# 操作
+"a" = "rename --append"
+"A" = "rename --append --force"
+"c" = "copy"
+"x" = "cut"
+"p" = "paste"
+"P" = "paste --force"
+"d" = "remove"
+"D" = "remove --permanently"
+"y" = "yank"
+"Y" = "yank --link"
+"e" = "open --edit"
+"E" = "open --edit --choose"
+"o" = "open --interactive"
+"O" = "open --interactive --choose"
+"r" = "shell --block --confirm"
+"R" = "shell --block --confirm --cwd"
+
+# タブ
+"t" = "tab_create --current"
+"T" = "tab_create"
+"[" = "tab_switch -1 --relative"
+"]" = "tab_switch 1 --relative"
+"{" = "tab_switch 0 --relative"
+"}" = "tab_switch -1 --relative"
+
+# プレビュー
+"<MouseMove>" = "hover: 0"
+"<MouseLeft>" = "click"
+"<MouseRight>" = "click --block"
+"<MouseWheelUp>" = "leave"
+"<MouseWheelDown>" = "leave"
+
+[preview]
+"<MouseMove>" = "hover: 0"
+"<MouseLeft>" = "click"
+"<MouseRight>" = "click --block"
+"<MouseWheelUp>" = "leave"
+"<MouseWheelDown>" = "leave"
+
+[task]
+"<Esc>" = "escape"
+"q" = "escape"
+"<Enter>" = "escape"
+
+[help]
+"<Esc>" = "escape"
+"q" = "escape"
+"?" = "escape"
+
+[which]
+"<Esc>" = "escape"
+"q" = "escape"
+
+[input]
+"<Esc>" = "escape"
+"<Enter>" = "escape"
+"<Backspace>" = "escape"
+
+[select]
+"<Esc>" = "escape"
+"<Enter>" = "escape"
+"<Space>" = "escape"
+
+[rename]
+"<Esc>" = "escape"
+"<Enter>" = "escape"
+"<Backspace>" = "escape"
+
+[trash]
+"<Esc>" = "escape"
+"q" = "escape"
+"y" = "escape"
+"n" = "escape"
+
+[delete]
+"<Esc>" = "escape"
+"q" = "escape"
+"y" = "escape"
+"n" = "escape"
+
