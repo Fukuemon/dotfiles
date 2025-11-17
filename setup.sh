@@ -62,59 +62,6 @@ create_symlink() {
     success "シンボリックリンクを作成しました: $target -> $source"
 }
 
-# wezterm設定のセットアップ
-setup_wezterm() {
-    echo ""
-    echo "--- wezterm設定のセットアップ ---"
-    
-    # 設定ディレクトリが存在しない場合は作成
-    if [ ! -d "$HOME/.config/wezterm" ]; then
-        mkdir -p "$HOME/.config/wezterm"
-        success "wezterm設定ディレクトリを作成しました"
-    fi
-    
-    # 既存のファイルをバックアップしてからシンボリックリンクを作成
-    # シンボリックリンクの場合は削除、通常ファイルの場合はバックアップ
-    if [ -L "$HOME/.config/wezterm/wezterm.lua" ]; then
-        rm "$HOME/.config/wezterm/wezterm.lua"
-        info "既存のシンボリックリンクを削除しました: wezterm.lua"
-    elif [ -f "$HOME/.config/wezterm/wezterm.lua" ]; then
-        cp "$HOME/.config/wezterm/wezterm.lua" "$HOME/.config/wezterm/wezterm.lua.backup.$(date +%Y%m%d_%H%M%S)" 2>/dev/null || true
-        info "既存のファイルをバックアップしました: wezterm.lua"
-    fi
-    create_symlink "$DOTFILES_DIR/wezterm/wezterm.lua" "$HOME/.config/wezterm/wezterm.lua"
-    
-    if [ -L "$HOME/.config/wezterm/keybinds.lua" ]; then
-        rm "$HOME/.config/wezterm/keybinds.lua"
-        info "既存のシンボリックリンクを削除しました: keybinds.lua"
-    elif [ -f "$HOME/.config/wezterm/keybinds.lua" ]; then
-        cp "$HOME/.config/wezterm/keybinds.lua" "$HOME/.config/wezterm/keybinds.lua.backup.$(date +%Y%m%d_%H%M%S)" 2>/dev/null || true
-        info "既存のファイルをバックアップしました: keybinds.lua"
-    fi
-    create_symlink "$DOTFILES_DIR/wezterm/keybinds.lua" "$HOME/.config/wezterm/keybinds.lua"
-    
-    # background.luaはユーザー名を書き換える必要があるため、コピーして置換
-    if [ -L "$HOME/.config/wezterm/background.lua" ]; then
-        rm "$HOME/.config/wezterm/background.lua"
-        info "既存のシンボリックリンクを削除しました: background.lua"
-    elif [ -f "$HOME/.config/wezterm/background.lua" ]; then
-        cp "$HOME/.config/wezterm/background.lua" "$HOME/.config/wezterm/background.lua.backup.$(date +%Y%m%d_%H%M%S)" 2>/dev/null || true
-        info "既存のファイルをバックアップしました: background.lua"
-    fi
-    
-    # background.luaをコピーして[HOME]を$HOMEに置き換え
-    sed "s|\[HOME\]|$HOME|g" "$DOTFILES_DIR/wezterm/background.lua" > "$HOME/.config/wezterm/background.lua"
-    success "background.lua をコピーしてユーザー名を書き換えました"
-    
-    # 背景画像ディレクトリを作成
-    if [ ! -d "$HOME/.config/wezterm/background" ]; then
-        mkdir -p "$HOME/.config/wezterm/background"
-        success "背景画像ディレクトリを作成しました: $HOME/.config/wezterm/background"
-    fi
-    
-    success "wezterm設定のセットアップが完了しました"
-}
-
 # zsh設定のセットアップ
 setup_zsh() {
     echo ""
@@ -229,6 +176,47 @@ setup_yazi() {
     success "yazi設定のセットアップが完了しました"
 }
 
+# ghostty設定のセットアップ
+setup_ghostty() {
+    echo ""
+    echo "--- ghostty設定のセットアップ ---"
+    
+    # ghosttyのインストール確認
+    if ! command -v ghostty &> /dev/null; then
+        info "ghosttyがインストールされていません"
+        if command -v brew &> /dev/null; then
+            read -p "Homebrewでghosttyをインストールしますか? (y/n): " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                brew install --cask ghostty
+                success "ghosttyをインストールしました"
+            else
+                info "ghosttyのインストールをスキップしました"
+            fi
+        else
+            info "ghosttyがインストールされていません。手動でインストールしてください"
+        fi
+    else
+        success "ghosttyは既にインストールされています"
+    fi
+    
+    # 設定ディレクトリが存在しない場合は作成
+    if [ ! -d "$HOME/.config/ghostty" ]; then
+        mkdir -p "$HOME/.config/ghostty"
+        success "ghostty設定ディレクトリを作成しました"
+    fi
+    
+    # 設定ファイルのシンボリックリンクを作成
+    create_symlink "$DOTFILES_DIR/ghostty/config" "$HOME/.config/ghostty/config"
+    
+    # backgroundディレクトリのシンボリックリンクを作成
+    if [ -d "$DOTFILES_DIR/ghostty/background" ]; then
+        create_symlink "$DOTFILES_DIR/ghostty/background" "$HOME/.config/ghostty/background"
+    fi
+    
+    success "ghostty設定のセットアップが完了しました"
+}
+
 # zellijのインストール確認（設定ファイルは作成しない）
 check_zellij() {
     echo ""
@@ -251,10 +239,10 @@ check_zellij() {
 
 # メイン処理
 main() {
-    setup_wezterm
     setup_zsh
     setup_nvim
     setup_yazi
+    setup_ghostty
     check_zellij
     
     echo ""
