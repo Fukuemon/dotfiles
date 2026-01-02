@@ -1,0 +1,5 @@
+# devbox global のバックアップ（ローカル生成物）
+devbox/backups/*
+!devbox/backups/.gitkeep
+
+

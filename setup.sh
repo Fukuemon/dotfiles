@@ -132,6 +132,64 @@ setup_zsh() {
     success "zsh設定のセットアップが完了しました"
 }
 
+# mise 設定（ツール一覧）のセットアップ
+setup_mise() {
+    echo ""
+    echo "--- mise設定のセットアップ ---"
+
+    ensure_mise
+
+    if [ -f "$DOTFILES_DIR/mise/config.toml" ]; then
+        create_symlink "$DOTFILES_DIR/mise/config.toml" "$HOME/.config/mise/config.toml"
+        success "mise の config.toml を dotfiles 管理にしました"
+    else
+        info "dotfiles 側に mise/config.toml が見つかりません（スキップ）"
+        return 0
+    fi
+
+    # mise の trust（セキュリティ機構）
+    # dotfiles 配下の config.toml を参照するため、初回は trust が必要になることがあります。
+    if [ "${MISE_TRUST:-0}" = "1" ]; then
+        info "mise trust を実行します（dotfiles の mise/config.toml を信頼します）"
+        mise_cmd trust "$DOTFILES_DIR/mise/config.toml" || info "mise trust でエラーが発生しました。必要なら手動で: mise trust $DOTFILES_DIR/mise/config.toml"
+    else
+        info "mise の trust はスキップします（必要なら: mise trust $DOTFILES_DIR/mise/config.toml  または MISE_TRUST=1 ./setup.sh）"
+    fi
+
+    if [ "${MISE_INSTALL:-0}" = "1" ]; then
+        info "mise install を実行します（時間がかかる場合があります）"
+        mise_cmd install || info "mise install でエラーが発生しましたが、続行します"
+    else
+        info "ツール導入は手動で実行してください: mise install（または MISE_INSTALL=1 ./setup.sh）"
+    fi
+
+    success "mise設定のセットアップが完了しました"
+}
+
+# devbox global の同期（オプション）
+setup_devbox_global() {
+    echo ""
+    echo "--- devbox global のセットアップ（オプション） ---"
+
+    if ! command -v devbox &> /dev/null; then
+        info "devbox が見つかりません。必要なら docs/devbox-setup.md を参照してください"
+        return 0
+    fi
+
+    if [ "${DEVBOX_GLOBAL_SYNC:-0}" = "1" ]; then
+        if [ -f "$DOTFILES_DIR/scripts/devbox-global-sync.sh" ]; then
+            info "devbox global を dotfiles の宣言に同期します"
+            bash "$DOTFILES_DIR/scripts/devbox-global-sync.sh" || info "devbox global sync でエラーが発生しましたが、続行します"
+            success "devbox global の同期が完了しました"
+        else
+            info "scripts/devbox-global-sync.sh が見つかりません（スキップ）"
+        fi
+    else
+        info "devbox global の同期はスキップします（必要なら DEVBOX_GLOBAL_SYNC=1 ./setup.sh）"
+        info "または手動で: bash ./scripts/devbox-global-sync.sh"
+    fi
+}
+
 # nvim設定のセットアップ
 setup_nvim() {
     echo ""
@@ -224,11 +282,13 @@ check_zellij() {
 
 # メイン処理
 main() {
+    setup_mise
     setup_zsh
     setup_nvim
     setup_yazi
     setup_ghostty
     check_zellij
+    setup_devbox_global
     
     echo ""
     echo "=========================================="

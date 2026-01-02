@@ -1,6 +1,7 @@
 # devbox セットアップ手順（dotfiles 用）
 
-このドキュメントは、`mise` で管理できないツール（例: `nvim`, `sheldon`, `yazi` など）を **devbox（Nix）** で管理するための手順です。
+このドキュメントは、`mise` で管理しづらいツール（例: `nvim`, `sheldon`, `yazi` など）を **devbox（Nix）** で管理するための手順です。  
+なお、CLI は `mise` の **aqua バックエンド**で入れられることも多いので、まずは `docs/mise-migration.md` の「aqua バックエンド優先」フローを確認してください。
 
 ## 位置づけ（mise と devbox の分担）
 
@@ -34,7 +35,7 @@ devbox には `devbox global` があり、パッケージを **グローバル�
 
 - 公式ドキュメント: [`https://www.jetify.com/docs/devbox/devbox-global`](https://www.jetify.com/docs/devbox/devbox-global)
 
-#### 例: nvim / sheldon / yazi をグローバル化
+### 例: nvim / sheldon / yazi をグローバル化
 
 ```bash
 devbox global add neovim sheldon yazi
@@ -43,13 +44,13 @@ devbox global add neovim sheldon yazi
 > 補足: Neovim プラグインによっては `git` を呼ぶことがあるため、macOS の `/usr/bin/git`（xcrun 経由）を避けたい場合は `git` も global に入れておくと安定します。
 > 例: `devbox global add git`
 
-#### いまのシェルだけ一時的に有効化
+### いまのシェルだけ一時的に有効化
 
 ```bash
 . <(devbox global shellenv --init-hook)
 ```
 
-#### zsh 起動時に常に有効化（推奨）
+### zsh 起動時に常に有効化（推奨）
 
 `~/.zshrc` に以下を追加します（このリポジトリでは `zsh/.zshrc` を管理しています）。
 
@@ -58,6 +59,44 @@ eval "$(devbox global shellenv --init-hook)"
 ```
 
 > このリポジトリでは **devbox global 前提**で運用し、リポジトリ直下の `devbox.json` は置かない方針です。
+
+## dotfiles で「devbox global のツール一覧」を管理する（推奨）
+
+devbox global は便利ですが、手元で `devbox global add ...` を積み上げるだけだと「どれを入れているか」が散逸しがちです。  
+この dotfiles では、devbox global の一覧を **宣言ファイル**として管理し、必要に応じて同期する運用にします。
+
+- **宣言ファイル**: `devbox/global-packages.txt`
+- **同期スクリプト**: `scripts/devbox-global-sync.sh`
+
+同期（追加のみ・冪等）:
+
+```bash
+bash ./scripts/devbox-global-sync.sh
+```
+
+ドライラン:
+
+```bash
+DRY_RUN=1 bash ./scripts/devbox-global-sync.sh
+```
+
+バックアップなし（通常は同期前に `devbox global list` を `devbox/backups/` に保存します）:
+
+```bash
+NO_BACKUP=1 bash ./scripts/devbox-global-sync.sh
+```
+
+strict（宣言にないパッケージを検出するだけ・削除しない）:
+
+```bash
+STRICT=1 bash ./scripts/devbox-global-sync.sh
+```
+
+strict（宣言にないパッケージを削除まで行う・危険なので opt-in）:
+
+```bash
+STRICT=1 APPLY_REMOVE=1 bash ./scripts/devbox-global-sync.sh
+```
 
 ## 3) （任意）プロジェクト単位で devbox を使う
 
@@ -91,6 +130,7 @@ brew uninstall neovim sheldon yazi
 > どのバイナリが使われているかは `which -a <cmd>` で必ず確認してください。
 
 ## 5) トラブルシューティング
+
 ### brew からの移行（重複の整理）
 
 devbox で同等ツールが動くことを確認してから、brew 側の重複を削除します。

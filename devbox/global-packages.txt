@@ -1,0 +1,31 @@
+# devbox global で管理するパッケージ一覧（dotfiles 管理）
+#
+# 反映:
+#   bash ./scripts/devbox-global-sync.sh
+#
+# ルール:
+# - 1 行 1 パッケージ
+# - 空行/先頭 # はコメント扱い
+
+neovim
+sheldon
+yazi
+git
+fzf
+zoxide
+htop
+graphviz
+zsh-completions
+wget
+watch
+universal-ctags
+tree
+tmux
+tmux-mem-cpu-load
+qemu
+pv
+psutils
+librsvg
+netpbm
+
+

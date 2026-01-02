@@ -137,6 +137,24 @@ brew uninstall <formula>
 現状 `setup.sh` と README は **mise（curl 導入）前提**の記述に合わせています。  
 以後、インストール手順を追加する場合は、原則として `mise` を利用してください（OS 統合が強いものは例外として `brew` を検討）。
 
+## dotfiles で「mise のツール一覧」を管理する（推奨）
+
+`mise use -g ...` は `~/.config/mise/config.toml` に記録されますが、これを手元で直接編集すると dotfiles と乖離します。  
+この dotfiles では、`mise/config.toml` を **唯一の真実**として管理し、`setup.sh` で `~/.config/mise/config.toml` に symlink します。
+
+手動反映（導入）:
+
+```bash
+mise trust ~/src/github.com/Fukuemon/dotfiles/config.toml
+mise install
+```
+
+セットアップ時に自動で `mise install` まで実行したい場合:
+
+```bash
+MISE_TRUST=1 MISE_INSTALL=1 ./setup.sh
+```
+
 ## チェックリスト（移行完了判定）
 
 - `mise --version` が通る
@@ -198,10 +216,33 @@ brew uninstall tfenv pyenv python@3.12 python@3.13
 > 注意: `pyenv`/`python@3.x` を消すと、既存のシェル設定やスクリプトがそれを前提にしている場合に影響が出ます。  
 > 消す前に `which -a python3` と `python3 --version` が「mise の python」を指していることを確認してください。
 
-### 2') mise に入っていない CLI は devbox で管理する（nvim/sheldon/yazi）
+### 2') （おすすめ）CLI は mise で “aqua バックエンド優先” に寄せる
 
-あなたの実測では `mise ls-remote nvim` が失敗しており、`mise which nvim/sheldon/yazi` も「mise bin ではない」扱いでした。  
-この系は **devbox（Nix）** に寄せるのが現実的です。
+`mise ls-remote <tool>` が失敗しても、**aqua バックエンドを明示**すればインストールできることがあります（mise は複数バックエンドを持つため）。
+
+基本フロー（記事の内容を dotfiles 用に整理）:
+
+1. `mise registry` で `<tool>` がどのバックエンドで提供されているか確認
+2. aqua があれば **`aqua:<owner>/<repo>` を明示**して `mise use -g` で導入
+3. `mise which <tool>` / `mise tool <tool>` で「どのバックエンドが使われているか」を確認
+
+例:
+
+```bash
+mise registry | rg '^fzf\s'
+mise use -g aqua:junegunn/fzf
+mise which fzf
+mise tool fzf
+```
+
+> 公式/補足:
+>
+> - mise は `[tools]` に `aqua:<owner>/<repo>` のように **バックエンドを明示**できます（aqua を優先したい時の定石）。
+> - `mise use -g` は `~/.config/mise/config.toml` に記録されます（グローバル管理）。
+
+### 2'') それでも難しい CLI は devbox で管理する（nvim/sheldon/yazi など）
+
+aqua/mise でうまく扱えない（あるいは運用ポリシー上 devbox に寄せたい）CLI は **devbox（Nix）** に寄せます。
 
 - 手順: `docs/devbox-setup.md`
   - `devbox global` を使えば、dotfiles 配下にいなくてもホストシェルで使える（例: `nvim` 等）。公式: `https://www.jetify.com/docs/devbox/devbox-global`

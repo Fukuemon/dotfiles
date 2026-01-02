@@ -1,0 +1,33 @@
+# mise グローバル設定（dotfiles 管理）
+#
+# 運用:
+# - このファイルを `~/.config/mise/config.toml` に symlink する（`setup.sh` が対応）
+# - 反映/導入: `mise install`
+#
+# ポリシー:
+# - 可能な限り CLI は aqua バックエンド（`aqua:<owner>/<repo>`）で固定
+# - mise で管理しづらいものは devbox global 側へ
+
+[tools]
+node = "latest"
+python = "latest"
+
+"aqua:BurntSushi/ripgrep" = "latest"
+"aqua:Kitware/CMake" = "latest"
+"aqua:aquasecurity/tfsec" = "latest"
+"aqua:astral-sh/uv" = "latest"
+"aqua:aws/aws-cli" = "latest"
+"aqua:cli/cli" = "latest"
+"aqua:hashicorp/terraform" = "latest"
+"aqua:jqlang/jq" = "latest"
+"aqua:junegunn/fzf" = "latest"
+"aqua:peco/peco" = "latest"
+"aqua:pnpm/pnpm" = "latest"
+"aqua:protocolbuffers/protobuf/protoc" = "latest"
+"aqua:sharkdp/bat" = "latest"
+"aqua:terraform-docs/terraform-docs" = "latest"
+"aqua:tfutils/tfenv" = "latest"
+"aqua:uutils/coreutils" = "latest"
+"aqua:x-motemen/ghq" = "latest"
+
+

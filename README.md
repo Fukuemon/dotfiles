@@ -54,12 +54,20 @@ dotfiles やその他設定ファイルを管理するためのリポジトリ�
 
 ### パッケージマネージャー方針（mise 統一）
 
-`brew` と `mise` の混在を避けるため、原則として **ランタイムは `mise`**、CLI は **devbox（global）** に寄せ、`brew` は **GUI/OS 統合が強いもの**に限定します。
+`brew` と `mise` の混在を避けるため、原則として **ランタイムは `mise`**、CLI は **mise（aqua バックエンド優先）→ 必要に応じて devbox（global）** に寄せ、`brew` は **GUI/OS 統合が強いもの**に限定します。
 
 - 方針（ADR）: `docs/adr/000001-package-manager-unification-mise-vs-devbox.md`
 - 移行手順: `docs/mise-migration.md`
 - mise に入っていないツールの管理: `docs/devbox-setup.md`（devbox/Nix）
 - brew の棚卸し/整理: `docs/brew-audit.md`
+
+#### ツール一覧を dotfiles で管理する
+
+- **mise**: `mise/config.toml` を `~/.config/mise/config.toml` に symlink（`setup.sh` が対応）
+  - 反映: `mise trust ~/src/github.com/Fukuemon/dotfiles/mise/config.toml` → `mise install`（dotfiles の配置に合わせてパスを調整）
+- **devbox global**: `devbox/global-packages.txt` を唯一の真実として管理
+  - 反映: `bash ./scripts/devbox-global-sync.sh`
+  - 追加オプション: `STRICT=1`（宣言外検出）, `STRICT=1 APPLY_REMOVE=1`（宣言外削除）, `NO_BACKUP=1`（バックアップ無効）
 
 ### 自動セットアップ
 
@@ -76,6 +84,16 @@ dotfiles やその他設定ファイルを管理するためのリポジトリ�
 3. sheldon のインストール確認と初期化
 4. lazy.nvim の自動インストール確認
 
+オプション:
+
+```bash
+# mise のツールを自動導入
+MISE_INSTALL=1 ./setup.sh
+
+# devbox global を宣言ファイルに同期
+DEVBOX_GLOBAL_SYNC=1 ./setup.sh
+```
+
 ### 手動セットアップ
 
 #### 1. リポジトリのクローン
@@ -85,22 +103,7 @@ git clone https://github.com/Fukuemon/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ```
 
-#### 2. wezterm 設定のセットアップ
-
-```bash
-# 設定ディレクトリを作成
-mkdir -p ~/.config/wezterm
-
-# シンボリックリンクを作成
-ln -sf ~/dotfiles/wezterm/wezterm.lua ~/.config/wezterm/wezterm.lua
-ln -sf ~/dotfiles/wezterm/keybinds.lua ~/.config/wezterm/keybinds.lua
-ln -sf ~/dotfiles/wezterm/background.lua ~/.config/wezterm/background.lua
-
-# 背景画像ディレクトリを作成
-mkdir -p ~/.config/wezterm/background
-```
-
-#### 3. zsh 設定のセットアップ
+#### 2. zsh 設定のセットアップ
 
 ```bash
 # mise のインストール（公式手順）
@@ -123,7 +126,7 @@ ln -sf ~/dotfiles/zsh/sheldon.toml ~/.config/sheldon/plugins.toml
 sheldon lock --update
 ```
 
-#### 4. nvim 設定のセットアップ
+#### 3. nvim 設定のセットアップ
 
 ```bash
 # 設定ディレクトリを作成
@@ -137,7 +140,7 @@ ln -sf ~/dotfiles/nvim/lua ~/.config/nvim/lua
 nvim
 ```
 
-#### 5. yazi 設定のセットアップ
+#### 4. yazi 設定のセットアップ
 
 ```bash
 # 設定ディレクトリを作成
