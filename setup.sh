@@ -162,17 +162,19 @@ setup_yazi() {
         mkdir -p "$HOME/.config/yazi"
         success "yazi設定ディレクトリを作成しました"
     fi
+
+    # 以前の構成の掃除:
+    # - plugins を dotfiles に symlink していると ya pkg の deploy が失敗するため削除
+    if [ -L "$HOME/.config/yazi/plugins" ]; then
+        rm "$HOME/.config/yazi/plugins"
+    fi
+    mkdir -p "$HOME/.config/yazi/plugins"
     
     # 既存のファイルをバックアップしてからシンボリックリンクを作成
     create_symlink "$DOTFILES_DIR/yazi/yazi.toml" "$HOME/.config/yazi/yazi.toml"
     create_symlink "$DOTFILES_DIR/yazi/keymap.toml" "$HOME/.config/yazi/keymap.toml"
     create_symlink "$DOTFILES_DIR/yazi/theme.toml" "$HOME/.config/yazi/theme.toml"
     create_symlink "$DOTFILES_DIR/yazi/init.lua" "$HOME/.config/yazi/init.lua"
-    
-    # プラグインディレクトリのシンボリックリンクを作成
-    if [ -d "$DOTFILES_DIR/yazi/plugins" ]; then
-        create_symlink "$DOTFILES_DIR/yazi/plugins" "$HOME/.config/yazi/plugins"
-    fi
     
     success "yazi設定のセットアップが完了しました"
 }

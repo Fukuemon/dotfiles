@@ -24,7 +24,7 @@ image_quality = 75
 # Neovimで編集（複数ファイル対応）
 # block = true でnvimが終了するまでyaziをブロック
 edit = [
-	{ run = '/opt/homebrew/bin/nvim "$@"', block = true, desc = "Edit in Neovim", for = "macos" },
+	{ run = 'nvim "$@"', block = true, desc = "Edit in Neovim", for = "macos" },
 	{ run = 'nvim "$@"', block = true, desc = "Edit in Neovim", for = "unix" },
 ]
 # Finderで表示（macOS）
@@ -43,6 +43,8 @@ rules = [
 	{ mime = "image/*", use = [ "open" ] },
 	{ mime = "video/*", use = [ "open" ] },
 	{ mime = "audio/*", use = [ "open" ] },
+	# 空ファイルの MIME は環境によって `inode/x-empty` 以外になることがある
+	{ mime = "application/x-empty", use = [ "edit" ] },
 	{ mime = "inode/x-empty", use = [ "edit" ] },
 	{ mime = "application/json", use = [ "edit" ] },
 	{ mime = "application/xml", use = [ "edit" ] },

@@ -33,8 +33,8 @@ dotfiles やその他設定ファイルを管理するためのリポジトリ�
   - `yazi/yazi.toml`: 基本設定（Neovim 統合設定含む）
   - `yazi/keymap.toml`: キーバインド設定
   - `yazi/theme.toml`: カラースキーム設定
-  - `yazi/init.lua`: 初期化スクリプト（プラグイン管理）
-  - `yazi/plugins/`: プラグインディレクトリ
+  - `yazi/init.lua`: yazi 起動時にプラグインを初期化（bunny/full-border 等）
+  - `yazi/README.md`: プラグイン導入（`ya pkg`）などのメモ
 
 - **zellij**: ターミナルマルチプレクサ設定（設定ファイルは含まれていません）
 
@@ -147,7 +147,6 @@ mkdir -p ~/.config/yazi
 ln -sf ~/dotfiles/yazi/yazi.toml ~/.config/yazi/yazi.toml
 ln -sf ~/dotfiles/yazi/keymap.toml ~/.config/yazi/keymap.toml
 ln -sf ~/dotfiles/yazi/theme.toml ~/.config/yazi/theme.toml
-ln -sf ~/dotfiles/yazi/init.lua ~/.config/yazi/init.lua
 ```
 
 ## 使用方法
@@ -219,17 +218,7 @@ Yazi はフローティングウィンドウとして表示され、ファイル
 
 #### プラグイン管理
 
-Yazi のプラグインは `yazi/plugins/` ディレクトリに配置します。
-
-1. プラグインの Lua ファイルを `yazi/plugins/` に配置
-2. `yazi/init.lua` でプラグインを読み込み
-
-例：
-
-```lua
--- yazi/init.lua
-require("plugins.my-plugin")
-```
+Yazi のプラグインは **`ya pkg`** で導入します。詳細は `yazi/README.md` を参照してください。
 
 詳細は [Yazi 公式ドキュメント](https://github.com/sxyazi/yazi) と [プラグイン公式ドキュメント](https://yazi-rs.github.io/docs/plugins) を参照してください。
 

@@ -2,11 +2,36 @@
 # Ref: https://minerva.mamansoft.net/2025-09-14-yazi-tui-file-manager-finder-replacement
 
 [mgr]
+# プラグイン/拡張系は prepend_keymap で優先して割り当てる（デフォルトより先に評価される）
+# 参考:
+# - Minerva 記事: https://minerva.mamansoft.net/2025-09-14-yazi-tui-file-manager-finder-replacement
+# - bunny.yazi: https://github.com/stelcodes/bunny.yazi
+prepend_keymap = [
+	# Enter: 常にエディタで開く（空ファイルでも確実に nvim を起動させる）
+	{ on = "<Enter>", run = "open --edit", desc = "Edit (nvim)" },
+
+	# l: ディレクトリなら入る / ファイルなら開く（smart-enter）
+	# 公式例では <kbd>l</kbd> に割り当てる前提（必要なら init.lua で open_multi 等を調整）
+	{ on = "l", run = "plugin smart-enter", desc = "Enter dir / open file" },
+
+	# ブックマークメニュー（bunny）
+	{ on = "e", run = "plugin bunny", desc = "Bookmarks (bunny)" },
+	{ on = "'", run = "plugin bunny fuzzy", desc = "Bookmarks fuzzy (bunny)" },
+
+	# カレント配下を再帰検索して移動（builtin fzf.lua）
+	{ on = [ "z", "f" ], run = "plugin fzf", desc = "Fuzzy jump (fzf.lua)" },
+
+	# 最近移動したディレクトリへ移動（builtin zoxide.lua）
+	{ on = [ "z", "i" ], run = "plugin zoxide", desc = "Zoxide jump (zoxide.lua)" },
+
+	# プレビュー最大化（toggle-pane）
+	{ on = "<C-p>", run = "plugin toggle-pane max-preview", desc = "Toggle preview maximize" },
+]
+
 # 基本操作
 "q" = "quit"
 "Q" = "quit --no-cwd-file"
 "<Esc>" = "escape"
-"<Enter>" = "open"
 "<Space>" = "toggle_selection"
 "<Backspace>" = "leave"
 "<Tab>" = "tab_switch 0"
@@ -47,7 +72,6 @@
 "D" = "remove --permanently"
 "y" = "yank"
 "Y" = "yank --link"
-"e" = "open --edit"
 "E" = "open --edit --choose"
 "o" = "open --interactive"
 "O" = "open --interactive --choose"
