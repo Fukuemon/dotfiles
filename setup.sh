@@ -32,6 +32,56 @@ info() {
     echo -e "${YELLOW}ℹ $1${NC}"
 }
 
+MISE_BIN="${HOME}/.local/bin/mise"
+
+ensure_mise() {
+    if command -v mise &> /dev/null; then
+        success "mise は既にインストールされています"
+        return 0
+    fi
+
+    if [ -x "$MISE_BIN" ]; then
+        success "mise は既にインストールされています（$MISE_BIN）"
+        return 0
+    fi
+
+    if ! command -v curl &> /dev/null; then
+        error "mise のインストールに curl が必要です。curl をインストールしてから再実行してください"
+    fi
+
+    info "mise が見つかりません。公式手順でインストールします（curl https://mise.run | sh）"
+    curl https://mise.run | sh
+
+    if [ ! -x "$MISE_BIN" ]; then
+        error "mise のインストールに失敗しました。${MISE_BIN} が見つかりません"
+    fi
+
+    success "mise をインストールしました: $MISE_BIN"
+}
+
+mise_cmd() {
+    if command -v mise &> /dev/null; then
+        mise "$@"
+    else
+        "$MISE_BIN" "$@"
+    fi
+}
+
+install_tool_if_missing() {
+    local cmd="$1"
+    local spec="$2"
+    local label="$3"
+
+    if command -v "$cmd" &> /dev/null; then
+        success "$label は既にインストールされています"
+        return 0
+    fi
+
+    info "$label がインストールされていません。mise でインストールします: $spec"
+    mise_cmd use --global "$spec" || error "$label の mise インストールに失敗しました: $spec"
+    success "$label をインストールしました"
+}
+
 # シンボリックリンクを作成する関数
 create_symlink() {
     local source="$1"
@@ -66,25 +116,8 @@ create_symlink() {
 setup_zsh() {
     echo ""
     echo "--- zsh設定のセットアップ ---"
-    
-    # sheldonのインストール確認
-    if ! command -v sheldon &> /dev/null; then
-        info "sheldonがインストールされていません"
-        if command -v brew &> /dev/null; then
-            read -p "Homebrewでsheldonをインストールしますか? (y/n): " -n 1 -r
-            echo
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
-                brew install sheldon
-                success "sheldonをインストールしました"
-            else
-                error "sheldonのインストールが必要です。手動でインストールしてください: https://github.com/rossmacarthur/sheldon"
-            fi
-        else
-            error "sheldonのインストールが必要です。手動でインストールしてください: https://github.com/rossmacarthur/sheldon"
-        fi
-    else
-        success "sheldonは既にインストールされています"
-    fi
+
+    ensure_mise
     
     create_symlink "$DOTFILES_DIR/zsh/.zshrc" "$HOME/.zshrc"
     create_symlink "$DOTFILES_DIR/zsh/sheldon.toml" "$HOME/.config/sheldon/plugins.toml"
@@ -93,33 +126,18 @@ setup_zsh() {
     if command -v sheldon &> /dev/null; then
         info "sheldonでプラグインをインストールしています..."
         sheldon lock --update || info "sheldon lock --update でエラーが発生しましたが、続行します"
-        success "zsh設定のセットアップが完了しました"
+    else
+        info "sheldon が見つかりません。devbox での導入を推奨します: docs/devbox-setup.md"
     fi
+    success "zsh設定のセットアップが完了しました"
 }
 
 # nvim設定のセットアップ
 setup_nvim() {
     echo ""
     echo "--- nvim設定のセットアップ ---"
-    
-    # nvimのインストール確認
-    if ! command -v nvim &> /dev/null; then
-        info "nvimがインストールされていません"
-        if command -v brew &> /dev/null; then
-            read -p "Homebrewでnvimをインストールしますか? (y/n): " -n 1 -r
-            echo
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
-                brew install neovim
-                success "nvimをインストールしました"
-            else
-                info "nvimのインストールをスキップしました"
-            fi
-        else
-            info "nvimがインストールされていません。手動でインストールしてください"
-        fi
-    else
-        success "nvimは既にインストールされています"
-    fi
+
+    ensure_mise
     
     create_symlink "$DOTFILES_DIR/nvim/init.lua" "$HOME/.config/nvim/init.lua"
     
@@ -136,25 +154,8 @@ setup_nvim() {
 setup_yazi() {
     echo ""
     echo "--- yazi設定のセットアップ ---"
-    
-    # yaziのインストール確認
-    if ! command -v yazi &> /dev/null; then
-        info "yaziがインストールされていません"
-        if command -v brew &> /dev/null; then
-            read -p "Homebrewでyaziをインストールしますか? (y/n): " -n 1 -r
-            echo
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
-                brew install yazi
-                success "yaziをインストールしました"
-            else
-                info "yaziのインストールをスキップしました"
-            fi
-        else
-            info "yaziがインストールされていません。手動でインストールしてください"
-        fi
-    else
-        success "yaziは既にインストールされています"
-    fi
+
+    ensure_mise
     
     # 設定ディレクトリが存在しない場合は作成
     if [ ! -d "$HOME/.config/yazi" ]; then
@@ -184,18 +185,7 @@ setup_ghostty() {
     # ghosttyのインストール確認
     if ! command -v ghostty &> /dev/null; then
         info "ghosttyがインストールされていません"
-        if command -v brew &> /dev/null; then
-            read -p "Homebrewでghosttyをインストールしますか? (y/n): " -n 1 -r
-            echo
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
-                brew install --cask ghostty
-                success "ghosttyをインストールしました"
-            else
-                info "ghosttyのインストールをスキップしました"
-            fi
-        else
-            info "ghosttyがインストールされていません。手動でインストールしてください"
-        fi
+        info "ghostty は OS 統合が強いため、このスクリプトではインストールしません（必要なら手動でインストールしてください）"
     else
         success "ghosttyは既にインストールされています"
     fi
@@ -226,14 +216,7 @@ check_zellij() {
         success "zellijは既にインストールされています"
     else
         info "zellijがインストールされていません（オプション）"
-        if command -v brew &> /dev/null; then
-            read -p "Homebrewでzellijをインストールしますか? (y/n): " -n 1 -r
-            echo
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
-                brew install zellij
-                success "zellijをインストールしました"
-            fi
-        fi
+        info "zellij は別途インストールしてください（このリポジトリでは設定のみ管理します）"
     fi
 }
 

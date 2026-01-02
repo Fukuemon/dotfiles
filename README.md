@@ -44,11 +44,22 @@ dotfiles やその他設定ファイルを管理するためのリポジトリ�
 
 以下のツールがインストールされている必要があります：
 
-- [sheldon](https://github.com/rossmacarthur/sheldon) - zsh プラグインマネージャー
+- [devbox](https://www.jetify.com/docs/devbox/devbox-global) - グローバルに CLI を管理（Nix ベース）
+- [mise](https://mise.jdx.dev/getting-started.html) - ランタイム/一部 CLI を管理
 - [wezterm](https://wezfurlong.org/wezterm/) - ターミナルエミュレータ
-- [nvim](https://neovim.io/) - エディタ
-- [yazi](https://github.com/sxyazi/yazi) - TUI ファイルマネージャー（オプション）
+- [nvim](https://neovim.io/) - エディタ（devbox で導入）
+- [sheldon](https://github.com/rossmacarthur/sheldon) - zsh プラグインマネージャー（devbox で導入）
+- [yazi](https://github.com/sxyazi/yazi) - TUI ファイルマネージャー（devbox で導入）
 - [zellij](https://zellij.dev/) - ターミナルマルチプレクサ（オプション）
+
+### パッケージマネージャー方針（mise 統一）
+
+`brew` と `mise` の混在を避けるため、原則として **ランタイムは `mise`**、CLI は **devbox（global）** に寄せ、`brew` は **GUI/OS 統合が強いもの**に限定します。
+
+- 方針（ADR）: `docs/adr/000001-package-manager-unification-mise-vs-devbox.md`
+- 移行手順: `docs/mise-migration.md`
+- mise に入っていないツールの管理: `docs/devbox-setup.md`（devbox/Nix）
+- brew の棚卸し/整理: `docs/brew-audit.md`
 
 ### 自動セットアップ
 
@@ -92,8 +103,17 @@ mkdir -p ~/.config/wezterm/background
 #### 3. zsh 設定のセットアップ
 
 ```bash
-# sheldonのインストール（Homebrewの場合）
-brew install sheldon
+# mise のインストール（公式手順）
+curl https://mise.run | sh
+
+# devbox のインストール（公式手順）
+curl -fsSL https://get.jetify.com/devbox | bash
+
+# 新しいシェルを開いて反映
+exec zsh -l
+
+# sheldon を含む CLI を devbox global で導入（どのディレクトリでも使える）
+devbox global add neovim sheldon yazi git
 
 # シンボリックリンクを作成
 ln -sf ~/dotfiles/zsh/.zshrc ~/.zshrc
@@ -120,9 +140,6 @@ nvim
 #### 5. yazi 設定のセットアップ
 
 ```bash
-# yaziのインストール（Homebrewの場合）
-brew install yazi
-
 # 設定ディレクトリを作成
 mkdir -p ~/.config/yazi
 
@@ -134,20 +151,6 @@ ln -sf ~/dotfiles/yazi/init.lua ~/.config/yazi/init.lua
 ```
 
 ## 使用方法
-
-### wezterm 背景画像の切り替え
-
-`wezterm/background/` ディレクトリに画像ファイルを配置し、以下のコマンドで背景画像を切り替えられます：
-
-```bash
-~/dotfiles/wezterm/background/change_bg.sh
-```
-
-または、シンボリックリンクを作成している場合：
-
-```bash
-~/.config/wezterm/background/change_bg.sh
-```
 
 ### zsh プラグインの管理
 
@@ -194,7 +197,7 @@ Yazi はフローティングウィンドウとして表示され、ファイル
 
 - `e`: 選択したファイルを Neovim で編集（エディタで開く）
 - `E`: 複数ファイルを選択して Neovim で編集
-- `<Enter>`: テキストファイルの場合、自動的に Neovim で開く（`yazi.toml` の設定による）
+- `<Enter>`: Neovim で編集して開く
 - `o`: インタラクティブに開く方法を選択
 
 `yazi.toml` の `[opener]` セクションで、テキストファイルは自動的に Neovim で開くように設定されています。

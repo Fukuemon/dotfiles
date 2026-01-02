@@ -29,17 +29,23 @@ export BUN_INSTALL="$HOME/.bun"
 path=(
   /opt/homebrew/bin
   /opt/homebrew/sbin
-  $HOME/.local/bin             
-  $HOME/.cargo/bin              
-  $BUN_INSTALL/bin             
+  $HOME/.local/bin
+  $HOME/.cargo/bin
+  $BUN_INSTALL/bin
   $HOME/.console-ninja/.bin
   /opt/homebrew/opt/postgresql@15/bin
   $HOME/go/bin
   $HOME/google-cloud-sdk/bin
-  $path                        
+  $path
 )
 
-eval "$(/Users/$USER/.local/bin/mise activate zsh)" 2>/dev/null
+##### devbox global（ホストシェルでグローバルパッケージを使う）
+# 公式: https://www.jetify.com/docs/devbox/devbox-global
+if command -v devbox &> /dev/null; then
+  eval "$(devbox global shellenv --init-hook)" 2>/dev/null
+fi
+
+eval "$($HOME/.local/bin/mise activate zsh)" 2>/dev/null
 ##### Google Cloud SDK
 # SDK の PATH/補完（存在する時だけ読み込み）
 [[ -f "$HOME/google-cloud-sdk/path.zsh.inc" ]] && . "$HOME/google-cloud-sdk/path.zsh.inc"
@@ -170,7 +176,7 @@ change-bg() {
       script_path="$(dirname "$zshrc_path")/../wezterm/background/change_bg.sh"
     fi
   fi
-  
+
   if [ -n "$script_path" ] && [ -f "$script_path" ]; then
     "$script_path" "$@"
   else
@@ -181,7 +187,7 @@ change-bg() {
 
 #### zellij（ログインシェルの最初だけ起動）
 if [ "${SHLVL:-0}" -eq 1 ]; then
- command -v zellij >/dev/null && zellij
+  command -v zellij >/dev/null && zellij
 fi
 alias zj="zellij"
 
