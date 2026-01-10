@@ -280,6 +280,17 @@ check_zellij() {
   fi
 }
 
+# aerospace設定のセットアップ
+setup_aerospace() {
+  echo ""
+  echo "--- aerospace設定のセットアップ ---"
+
+  # 設定ファイルのシンボリックリンクを作成
+  create_symlink "$DOTFILES_DIR/aerospace/aerospace.toml" "$HOME/.aerospace.toml"
+
+  success "aerospace設定のセットアップが完了しました"
+}
+
 # メイン処理
 main() {
   # setup_mise
@@ -289,6 +300,7 @@ main() {
   # setup_ghostty
   # check_zellij
   # setup_devbox_global
+  setup_aerospace
 
   echo ""
   echo "=========================================="
