@@ -29,5 +29,8 @@ python = "latest"
 "aqua:tfutils/tfenv" = "latest"
 "aqua:uutils/coreutils" = "latest"
 "aqua:x-motemen/ghq" = "latest"
+"aqua:gradle/gradle" = "latest"
+"aqua:jesseduffield/lazygit" = "latest"
+"aqua:jesseduffield/lazydocker" = "latest"
 
 

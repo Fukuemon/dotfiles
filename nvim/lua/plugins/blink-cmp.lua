@@ -1,30 +1,30 @@
--- blink.cmp: 補完プラグイン
+-- blink.cmp: 高速な補完プラグイン（nvim-cmpの代替）
+-- LazyVimのblink.cmp extraを使用
 
 return {
-  "saghen/blink.cmp",
-  version = "1.*",
-  dependencies = { "rafamadriz/friendly-snippets" },
-  ---@module 'blink.cmp'
-  ---@type blink.cmp.Config
-  opts = {
-    -- 'default' (recommended) for mappings similar to built-in completions (C-y to accept)
-    -- 'super-tab' for mappings similar to vscode (tab to accept)
-    -- 'enter' for enter to accept
-    -- 'none' for no mappings
-    keymap = { preset = "default" },
-    appearance = {
-      -- 'mono' (default) for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
-      nerd_font_variant = "mono",
-    },
-    -- (Default) Only show the documentation popup when manually triggered
-    completion = { documentation = { auto_show = false } },
-    -- Default list of enabled providers
-    sources = {
-      default = { "lsp", "path", "snippets", "buffer" },
-    },
-    -- Rust fuzzy matcher for typo resistance and significantly better performance
-    fuzzy = { implementation = "prefer_rust_with_warning" },
-  },
-  opts_extend = { "sources.default" },
-}
+  -- LazyVimのblink.cmp extraをインポート（nvim-cmpを無効化してblink.cmpに切り替え）
+  { import = "lazyvim.plugins.extras.coding.blink" },
 
+  -- blink.cmpのカスタム設定
+  {
+    "saghen/blink.cmp",
+    opts = {
+      -- キーマップ: 'default', 'super-tab', 'enter' から選択
+      keymap = { preset = "default" },
+      appearance = {
+        -- Nerd Fontの種類: 'mono' or 'normal'
+        nerd_font_variant = "mono",
+      },
+      completion = {
+        -- ドキュメントポップアップを手動トリガー時のみ表示
+        documentation = { auto_show = true },
+      },
+      -- 有効なソース
+      sources = {
+        default = { "lsp", "path", "snippets", "buffer" },
+      },
+      -- Rustファジーマッチャー（タイポ耐性と高速化）
+      fuzzy = { implementation = "prefer_rust_with_warning" },
+    },
+  },
+}

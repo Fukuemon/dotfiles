@@ -1,20 +1,3 @@
--- Neovim基本設定
-
--- LeaderキーをSpaceに設定
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
-
-vim.opt.shell = "/bin/zsh"
-vim.opt.shiftwidth = 4
-vim.opt.tabstop = 4
-vim.opt.expandtab = true
-vim.opt.textwidth = 0
-vim.opt.autoindent = true
-vim.opt.hlsearch = true
-vim.opt.clipboard = "unnamed"
-vim.opt.termguicolors = true
-vim.opt.syntax = "on"
-
--- fzf のランタイムパス設定
-vim.opt.rtp:append("/usr/local/opt/fzf")
-
+-- Options are automatically loaded before lazy.nvim startup
+-- Default options that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/options.lua
+-- Add any additional options here
