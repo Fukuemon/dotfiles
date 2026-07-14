@@ -1,36 +1,70 @@
 # mise グローバル設定（dotfiles 管理）
 #
 # 運用:
-# - このファイルを `~/.config/mise/config.toml` に symlink する（`setup.sh` が対応）
+# - chezmoi が `~/.config/mise/config.toml` に配置する（`chezmoi apply`）
 # - 反映/導入: `mise install`
 #
 # ポリシー:
 # - 可能な限り CLI は aqua バックエンド（`aqua:<owner>/<repo>`）で固定
-# - mise で管理しづらいものは devbox global 側へ
+# - mise で管理しづらいものは devbox global 側へ（devbox/global-packages.txt）
+#
+# 削除したもの:
+# - aqua:peco/peco  … fzf に一本化（.zshrc の Ctrl-] / Ctrl-U を fzf 化したため）
+# - aqua:tfutils/tfenv … terraform 自体を mise が管理しており、shim が二重になるため
 
 [tools]
-node = "latest"
-python = "latest"
 
+# --- dotfiles 管理 ---
+"aqua:twpayne/chezmoi" = "latest"
+
+# --- シェル体験（.zshrc から init される） ---
+"aqua:atuinsh/atuin" = "latest"    # Ctrl-R: SQLite ベースの履歴検索
+"aqua:junegunn/fzf" = "latest"     # fzf-tab / Ctrl-] / Ctrl-U の土台
+"aqua:sharkdp/fd" = "latest"       # find 代替（fzf のデフォルト検索に使用）
+"aqua:sharkdp/bat" = "latest"      # cat 代替（fzf のプレビューにも使用）
+"aqua:dandavison/delta" = "latest" # git diff のページャ
+
+# --- ターミナルマルチプレクサ ---
+# これまで cargo install で入れたものが ~/.cargo/bin にあり、どこにも宣言されて
+# いなかった（新しいマシンで再現できない状態だった）ので mise 管理に移した。
+"aqua:zellij-org/zellij" = "latest"
+# eza（ls 代替）は macOS バイナリが GitHub Releases に無く aqua で入らないため devbox global 側で管理
+
+# --- 基本 CLI ---
 "aqua:BurntSushi/ripgrep" = "latest"
 "aqua:Kitware/CMake" = "latest"
-"aqua:aquasecurity/tfsec" = "latest"
-"aqua:astral-sh/uv" = "latest"
-"aqua:aws/aws-cli" = "latest"
-"aqua:cli/cli" = "latest"
-"aqua:hashicorp/terraform" = "latest"
 "aqua:jqlang/jq" = "latest"
-"aqua:junegunn/fzf" = "latest"
-"aqua:peco/peco" = "latest"
-"aqua:pnpm/pnpm" = "latest"
-"aqua:protocolbuffers/protobuf/protoc" = "latest"
-"aqua:sharkdp/bat" = "latest"
-"aqua:terraform-docs/terraform-docs" = "latest"
-"aqua:tfutils/tfenv" = "latest"
-"aqua:uutils/coreutils" = "latest"
 "aqua:x-motemen/ghq" = "latest"
-"aqua:gradle/gradle" = "latest"
+"aqua:cli/cli" = "latest"
 "aqua:jesseduffield/lazygit" = "latest"
 "aqua:jesseduffield/lazydocker" = "latest"
+"aqua:go-task/task" = "latest"
+"aqua:evilmartians/lefthook" = "latest"
+opencode = "latest"
+
+# --- Go 製の開発ツール ---
+# もともと `go install` で ~/go/bin に入れていたもの。どこにも宣言が無く新しいマシンで
+# 再現できなかったため mise に移した。aqua（プレビルド配布）にあるものは aqua を使い、
+# 無いものだけ go バックエンド（ソースビルド）にしている。
+"go:github.com/k1LoW/git-wt" = "latest"           # git worktree 切り替え。.zshrc が eval している
+"aqua:swaggo/swag" = "latest"                     # Swagger ドキュメント生成
+"go:github.com/go-delve/delve/cmd/dlv" = "latest" # Go デバッガ（aqua 側の実体も go_install なので go バックエンド）
+"go:golang.org/x/tools/gopls" = "latest"          # Go LSP
+"go:honnef.co/go/tools/cmd/staticcheck" = "latest"
+
+# --- 言語ランタイム ---
+node = "latest"
+python = "latest"
+go = "1.26.4"
+"aqua:pnpm/pnpm" = "latest"
+"aqua:astral-sh/uv" = "latest"
+"aqua:gradle/gradle" = "latest"
+"aqua:protocolbuffers/protobuf/protoc" = "latest"
+
+# --- クラウド / IaC ---
+"aqua:aws/aws-cli" = "latest"
+"aqua:hashicorp/terraform" = "latest"
+"aqua:terraform-docs/terraform-docs" = "latest"
+"aqua:aquasecurity/tfsec" = "latest"
 
 

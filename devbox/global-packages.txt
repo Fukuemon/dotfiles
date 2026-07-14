@@ -11,7 +11,7 @@ neovim
 sheldon
 yazi
 git
-fzf
+eza
 zoxide
 htop
 graphviz

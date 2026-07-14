@@ -1,0 +1,32 @@
+# atuin — Ctrl-R の履歴検索（https://docs.atuin.sh/configuration/config/）
+#
+# 履歴は ~/.local/share/atuin/history.db（SQLite）に入る。
+# クラウド同期はアカウント登録が必要で、既定では無効（ローカル完結）。
+#
+# 既存の ~/.zsh_history からの取り込み: atuin import auto
+
+## 検索
+search_mode = "fuzzy"
+filter_mode = "global"        # 既定は全履歴を対象（Ctrl-R 中に Tab でディレクトリ単位等へ切替可）
+inline_height = 20            # 全画面を占有せずプロンプト直上に表示
+
+## Enter の挙動
+# false = 選んだコマンドを「行に載せるだけ」で実行しない。
+# 以前の peco ベースの Ctrl-R も実行はしない挙動だったので、それに合わせている。
+# （atuin の既定は true = 即実行）
+enter_accept = false
+
+## 表示
+style = "compact"
+show_preview = true
+
+## 起動時にネットワークへ出ないようにする（シェル起動を遅くしないため）
+update_check = false
+
+## 記録しないコマンド
+history_filter = [
+  "^ ",              # 先頭が空白のコマンド
+  "^(pass|gopass)",
+  "AWS_SECRET",
+  "GITHUB_TOKEN",
+]
