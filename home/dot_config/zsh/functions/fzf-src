@@ -1,0 +1,14 @@
+# fzf-src — ghq で管理しているリポジトリを fzf で選んで cd する ZLE ウィジェット
+#
+# バインド: Ctrl-]（30-keybindings.zsh で zle -N / bindkey している）
+
+local selected
+selected=$(ghq list --full-path \
+  | fzf --prompt="repository> " --query="$LBUFFER" \
+        --preview 'eza -1 --color=always --icons --group-directories-first {}')
+
+if [[ -n $selected ]]; then
+  BUFFER="cd ${selected}"
+  zle accept-line
+fi
+zle reset-prompt

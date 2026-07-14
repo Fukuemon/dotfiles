@@ -1,25 +1,51 @@
 # sheldon プラグイン設定ファイル
 # https://github.com/rossmacarthur/sheldon
+#
+# 【重要】このファイルの「定義順」がそのまま source 順になります。並べ替えるときは
+# 下記の制約を必ず守ってください。
+#
+#   1. zsh-defer            : defer テンプレートを使う全プラグインより前に置くこと
+#   2. fzf-tab              : compinit の後（.zshrc 側で実行済み）かつ、ZLE ウィジェットを
+#                             ラップするプラグイン（autosuggestions / syntax-highlighting）より前
+#   3. zsh-autosuggestions  : fzf-tab の後
+#   4. zsh-syntax-highlighting : 必ず最後（全カスタムウィジェット定義後に source する必要がある）
+#
+# なお sheldon 本体は devbox global（nix）で入っています。.zshrc では
+# devbox / mise を有効化した「後」に `sheldon source` を呼ぶこと。
+# 順序を逆にすると PATH 上に sheldon が居らず、プラグインが丸ごと無効になります。
 
 shell = "zsh"
 
-# zsh-autosuggestions - コマンド履歴の自動補完
-[plugins.zsh-autosuggestions]
-github = "zsh-users/zsh-autosuggestions"
+[templates]
+# romkatv/zsh-defer によるプロンプト表示後の遅延ロード。
+# apply = ["defer"] を指定したプラグインに適用されます。
+defer = "{{ hooks?.pre | nl }}{% for file in files %}zsh-defer source \"{{ file }}\"\n{% endfor %}{{ hooks?.post | nl }}"
 
-# zsh-z - ディレクトリジャンプ
-[plugins.zsh-z]
-github = "agkozak/zsh-z"
+# --- 1. 遅延ロード基盤（最初に読む） ---
+[plugins.zsh-defer]
+github = "romkatv/zsh-defer"
 
-# fzf - ファジーファインダー
-[plugins.fzf]
-github = "junegunn/fzf"
-
-# powerlevel10k - テーマ
+# --- 2. テーマ（プロンプトなので遅延させない） ---
 [plugins.powerlevel10k]
 github = "romkatv/powerlevel10k"
 
-# zsh-syntax-highlighting - シンタックスハイライト
+# --- 3. 補完 UI: Tab 補完を fzf のインタラクティブ選択に置換 ---
+# 遅延させると Tab を押した瞬間に間に合わないことがあるため同期ロード。
+[plugins.fzf-tab]
+github = "Aloxaf/fzf-tab"
+
+# --- 4. 履歴からのコマンド自動サジェスト（グレー表示 → → で確定） ---
+[plugins.zsh-autosuggestions]
+github = "zsh-users/zsh-autosuggestions"
+apply = ["defer"]
+
+# --- 5. シンタックスハイライト（必ず最後） ---
 [plugins.zsh-syntax-highlighting]
 github = "zsh-users/zsh-syntax-highlighting"
+apply = ["defer"]
 
+# 削除したプラグイン:
+# - fzf (junegunn/fzf) : リポジトリを clone するだけで、シェル統合スクリプトは
+#                        shell/ 配下にあるため sheldon からは source されず無意味だった。
+#                        現在は .zshrc で `eval "$(fzf --zsh)"` を使用（mise 管理の fzf）。
+# - zsh-z (agkozak/zsh-z) : devbox global の zoxide と機能が重複。zoxide に一本化。
