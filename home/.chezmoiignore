@@ -1,0 +1,6 @@
+# chezmoi の配布対象から外すもの（パスは配置先 ~ からの相対）
+# リポジトリには置いておきたいが ~ には要らないファイル。
+
+.config/nvim/LICENSE
+.config/nvim/README.md
+.config/yazi/README.md
