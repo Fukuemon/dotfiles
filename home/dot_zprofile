@@ -1,0 +1,19 @@
+# ~/.zprofile — ログインシェルで .zshrc より先に実行される
+#
+# ここには「ログイン時に一度だけ決まればよい環境」だけを置く。
+# 対話シェルの設定（プラグイン・補完・キーバインド）は .zshrc 側。
+#
+# 注意: ここで設定した環境変数は子プロセスに継承される。
+#       セッション固有の値（cwd に依存するものなど）は置かないこと。
+
+# Homebrew
+# PATH に加えて HOMEBREW_PREFIX / MANPATH / INFOPATH を設定する。
+# .zshrc の path=() でも /opt/homebrew/bin を並べているが、typeset -U で重複は除去される。
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
+# JetBrains Toolbox（IDE を CLI から起動するためのスクリプト群）
+_jetbrains_scripts="$HOME/Library/Application Support/JetBrains/Toolbox/scripts"
+[[ -d $_jetbrains_scripts ]] && export PATH="$PATH:$_jetbrains_scripts"
+unset _jetbrains_scripts
