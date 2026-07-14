@@ -52,7 +52,7 @@ devbox global add neovim sheldon yazi
 
 ### zsh 起動時に常に有効化（推奨）
 
-`~/.zshrc` に以下を追加します（このリポジトリでは `zsh/.zshrc` を管理しています）。
+`~/.zshrc` に以下を追加します（このリポジトリでは `home/dot_zshrc` を管理しています）。
 
 ```bash
 eval "$(devbox global shellenv --init-hook)"

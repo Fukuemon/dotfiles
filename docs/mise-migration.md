@@ -12,8 +12,8 @@
 ## 前提（このリポジトリの現状）
 
 - `setup.sh` は **mise 前提**で、`curl https://mise.run | sh` による `mise` 導入と、mise 経由でのツール導入を行います。
-- `zsh/.zshrc` には `mise activate zsh` が既に設定されています。
-- `zsh/.zshrc` の PATH は現状 **`/opt/homebrew/bin` が先**に来るため、同名コマンドがある場合に **brew 版が優先**されやすいです。
+- `home/dot_zshrc` には `mise activate zsh` が既に設定されています。
+- `home/dot_zshrc` の PATH は現状 **`/opt/homebrew/bin` が先**に来るため、同名コマンドがある場合に **brew 版が優先**されやすいです。
 
 ## 移行全体フロー（おすすめ）
 
@@ -58,7 +58,7 @@ curl https://mise.run | sh
 
 ### zsh 連携の確認
 
-`zsh/.zshrc` に `mise activate zsh` があること、起動時にエラーが出ないことを確認します。
+`home/dot_zshrc` に `mise activate zsh` があること、起動時にエラーが出ないことを確認します。
 
 ```bash
 exec zsh -l
@@ -83,7 +83,7 @@ which -a yazi
 - 「mise 管理にしたいコマンド」は **mise 側が優先**される状態にする
 - `brew` は GUI/OS 統合系が中心なので、CLI を mise に寄せるほど **PATH の意図が重要**になります
 
-> 現状の `zsh/.zshrc` だと Homebrew が先頭寄りなので、移行後は「期待と違うバイナリが動く」ことが起きやすいです。  
+> 現状の `home/dot_zshrc` だと Homebrew が先頭寄りなので、移行後は「期待と違うバイナリが動く」ことが起きやすいです。  
 > 必要なら PATH の優先順を見直してください（変更は別 PR/別コミット推奨）。
 
 ## 4) ランタイムを mise へ移行する（推奨：ここから着手）
@@ -140,7 +140,7 @@ brew uninstall <formula>
 ## dotfiles で「mise のツール一覧」を管理する（推奨）
 
 `mise use -g ...` は `~/.config/mise/config.toml` に記録されますが、これを手元で直接編集すると dotfiles と乖離します。  
-この dotfiles では、`mise/config.toml` を **唯一の真実**として管理し、`setup.sh` で `~/.config/mise/config.toml` に symlink します。
+この dotfiles では、`home/dot_config/mise/config.toml` を **唯一の真実**として管理し、chezmoi が `~/.config/mise/config.toml` に symlink します（`chezmoi apply`）。
 
 手動反映（導入）:
 

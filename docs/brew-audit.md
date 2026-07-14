@@ -140,3 +140,48 @@ brew uninstall ripgrep
 1. devbox 側に “最低限（nvim/sheldon/yazi）” を入れて動作確認（`docs/devbox-setup.md`）
 2. `which -a` で「どのコマンドがどこから来てるか」を確認しながら、1 個ずつ brew を削除
 3. 最後に `pyenv/tfenv/python@3.x` などの“環境基盤”を整理（影響が大きいので後回し）
+
+---
+
+## 棚卸しの結果（2026-07-11 実施）
+
+### 削除したもの
+
+| | 理由 |
+|---|---|
+| `brew go` | mise が `go = "1.26.4"` を管理しており完全に重複。実際に使われていたのも mise 版で、brew 版は何からも依存されていない leaf だった。 |
+| `wezterm`（cask） | ghostty へ移行済み。dotfiles に wezterm の設定は置いていない。 |
+| `hyper`（cask） | 同上。`cpoke` エイリアス（`~/.hyper.js` を書き換えるスクリプト）も合わせて削除した。 |
+
+### 残した leaf
+
+`aom` / `coreutils` / `freetds` / `harfbuzz` / `libzip` / `mole`
+
+いずれも「GUI/OS 統合が強いもの、または他アプリのビルド依存」に該当するため brew のままにしています。
+必要になったら `brew uses --installed <pkg>` で被依存を確認してから外してください。
+
+### cask（brew に残すもの）
+
+`aerospace` / `alt-tab` / `codexbar` / `ghostty` / `jordanbaird-ice` / `pgadmin4`
+
+GUI アプリなので方針どおり brew（cask）で管理します。
+
+### 手つかずだった野良インストールの回収
+
+`~/go/bin` に `go install` で入れた実行ファイルが 6 つあり、**どこにも宣言されていませんでした**
+（新しいマシンで再現できない状態）。とくに `git-wt` は `.zshrc` が `eval` していたため、
+これが無いと `git wt` が壊れます。
+
+`aqua` 以外を mise に移し、`~/go/bin` の重複コピーは削除しました（111MB → 30MB）。
+
+| ツール | 移行先 |
+|---|---|
+| `git-wt` | `go:github.com/k1LoW/git-wt` |
+| `dlv` | `go:github.com/go-delve/delve/cmd/dlv` |
+| `gopls` | `go:golang.org/x/tools/gopls` |
+| `staticcheck` | `go:honnef.co/go/tools/cmd/staticcheck` |
+| `swag` | `aqua:swaggo/swag` |
+| `aqua` | 宣言せず放置（履歴上まったく使われておらず、mise の aqua バックエンドとは別物） |
+
+`zellij` も `cargo install` 由来の 0.43.1 が `~/.cargo/bin` にあり未宣言だったため、
+`aqua:zellij-org/zellij`（0.44.3）に移して cargo 版を削除しました。
