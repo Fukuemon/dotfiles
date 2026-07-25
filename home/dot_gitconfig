@@ -1,0 +1,49 @@
+[user]
+	name = Fukuemon
+	email = fukuemony029@gmail.com
+
+[core]
+	autocrlf = input
+	# delta: シンタックスハイライト付きの diff ページャ（mise 管理）
+	pager = delta
+
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	navigate = true      # n / N で差分ファイル間を移動
+	line-numbers = true
+	hyperlinks = true
+
+[diff]
+	colorMoved = default
+
+[merge]
+	# zdiff3: コンフリクト時に「共通の祖先」も表示する
+	conflictStyle = zdiff3
+
+[init]
+	defaultBranch = main
+
+[push]
+	# 新規ブランチの push で --set-upstream を省略できる
+	autoSetupRemote = true
+
+[ghq]
+	root = ~/src
+
+[http]
+	postBuffer = 524288000
+
+# gh CLI を認証ヘルパーとして使う。
+# 以前はここに mise のインストール先絶対パス
+#   !/Users/.../mise/installs/aqua-cli-cli/2.83.2/gh_2.83.2_macOS_arm64/bin/gh
+# が書かれていたが、gh が更新されるとバージョン番号入りのパスが消えて
+# 認証が壊れるため、PATH 上の gh を使うように変更した。
+[credential "https://github.com"]
+	helper =
+	helper = !gh auth git-credential
+
+[credential "https://gist.github.com"]
+	helper =
+	helper = !gh auth git-credential

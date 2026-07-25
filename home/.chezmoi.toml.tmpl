@@ -1,0 +1,18 @@
+# ~/.config/chezmoi/chezmoi.toml として生成される（`chezmoi init` 時）。
+# ここが唯一の設定の出どころなので、直接 ~/.config/chezmoi/chezmoi.toml を
+# 編集しないこと。
+
+# ソースディレクトリはこのリポジトリ自身（ghq 配下）。
+# .chezmoi.sourceDir は .chezmoiroot 適用後（= <repo>/home）を指すので、
+# 親をとってリポジトリのルートに戻す。
+sourceDir = {{ trimSuffix "/home" .chezmoi.sourceDir | quote }}
+
+# symlink モード:
+#   ~/.zshrc などを「実体のコピー」ではなく「リポジトリへの symlink」として配置する。
+#   これまでの setup.sh と同じく、リポジトリのファイルを編集した瞬間に反映される
+#   （chezmoi apply の実行を忘れても壊れない）。
+mode = "symlink"
+
+[git]
+    autoCommit = false
+    autoPush = false

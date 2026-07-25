@@ -1,319 +1,169 @@
-#!/bin/bash
+#!/usr/bin/env bash
+#
+# dotfiles セットアップ（chezmoi ブートストラップ）
+#
+# 設定ファイルの配置そのものは chezmoi が行う。このスクリプトは
+# 「chezmoi を動かせる状態」まで持っていくのが役割。
+#
+#   1. mise を用意する
+#   2. mise で chezmoi と CLI 群を入れる
+#   3. devbox global を宣言ファイルに同期する（sheldon / eza / yazi など）
+#   4. chezmoi init + apply（~ に symlink が張られる）
+#   5. sheldon のプラグイン取得、atuin への履歴取り込み
+#
+# 使い方:
+#   ./setup.sh              通常のセットアップ
+#   DRY_RUN=1 ./setup.sh    何をするかだけ表示する
 
-# dotfiles セットアップスクリプト
-
-set -e
+set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DOTFILES_DIR"
 
-echo "=========================================="
-echo "dotfiles セットアップを開始します"
-echo "=========================================="
-echo ""
+RED=$'\033[0;31m'; GREEN=$'\033[0;32m'; YELLOW=$'\033[1;33m'; NC=$'\033[0m'
+error()   { echo "${RED}エラー: $1${NC}" >&2; exit 1; }
+success() { echo "${GREEN}✓ $1${NC}"; }
+info()    { echo "${YELLOW}ℹ $1${NC}"; }
+step()    { echo; echo "--- $1 ---"; }
 
-# 色の定義
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-# エラーハンドリング関数
-error() {
-  echo -e "${RED}エラー: $1${NC}" >&2
-  exit 1
+DRY_RUN="${DRY_RUN:-0}"
+run() {
+  if [ "$DRY_RUN" = "1" ]; then
+    echo "  [DRY_RUN] $*"
+  else
+    "$@"
+  fi
 }
 
-success() {
-  echo -e "${GREEN}✓ $1${NC}"
-}
+MISE_BIN="$HOME/.local/bin/mise"
 
-info() {
-  echo -e "${YELLOW}ℹ $1${NC}"
-}
-
-MISE_BIN="${HOME}/.local/bin/mise"
-
+# --- 1. mise -----------------------------------------------------------------
 ensure_mise() {
-  if command -v mise &>/dev/null; then
-    success "mise は既にインストールされています"
-    return 0
-  fi
+  step "mise"
 
+  if command -v mise &>/dev/null; then
+    MISE_BIN="$(command -v mise)"
+    success "mise は導入済み: $MISE_BIN"
+    return
+  fi
   if [ -x "$MISE_BIN" ]; then
-    success "mise は既にインストールされています（$MISE_BIN）"
-    return 0
+    success "mise は導入済み: $MISE_BIN"
+    return
   fi
 
-  if ! command -v curl &>/dev/null; then
-    error "mise のインストールに curl が必要です。curl をインストールしてから再実行してください"
-  fi
-
-  info "mise が見つかりません。公式手順でインストールします（curl https://mise.run | sh）"
-  curl https://mise.run | sh
-
-  if [ ! -x "$MISE_BIN" ]; then
-    error "mise のインストールに失敗しました。${MISE_BIN} が見つかりません"
-  fi
-
-  success "mise をインストールしました: $MISE_BIN"
+  command -v curl &>/dev/null || error "mise の導入に curl が必要です"
+  info "mise を導入します（curl https://mise.run | sh）"
+  run sh -c 'curl -fsSL https://mise.run | sh'
+  [ "$DRY_RUN" = "1" ] || [ -x "$MISE_BIN" ] || error "mise の導入に失敗しました"
+  success "mise を導入しました"
 }
 
-mise_cmd() {
-  if command -v mise &>/dev/null; then
-    mise "$@"
-  else
-    "$MISE_BIN" "$@"
-  fi
+# --- 2. mise のツール --------------------------------------------------------
+install_mise_tools() {
+  step "mise のツール（chezmoi / atuin / fzf / fd / bat / delta / ランタイム）"
+
+  # config.toml はまだ ~ に配置されていない可能性があるので、リポジトリのものを直接使う。
+  local cfg="$DOTFILES_DIR/home/dot_config/mise/config.toml"
+  [ -f "$cfg" ] || error "mise の設定が見つかりません: $cfg"
+
+  run "$MISE_BIN" trust "$cfg"
+  info "mise install を実行します（初回は時間がかかります）"
+  run env MISE_GLOBAL_CONFIG_FILE="$cfg" "$MISE_BIN" install
+  success "mise のツールを導入しました"
 }
 
-install_tool_if_missing() {
-  local cmd="$1"
-  local spec="$2"
-  local label="$3"
-
-  if command -v "$cmd" &>/dev/null; then
-    success "$label は既にインストールされています"
-    return 0
-  fi
-
-  info "$label がインストールされていません。mise でインストールします: $spec"
-  mise_cmd use --global "$spec" || error "$label の mise インストールに失敗しました: $spec"
-  success "$label をインストールしました"
-}
-
-# シンボリックリンクを作成する関数
-create_symlink() {
-  local source="$1"
-  local target="$2"
-  local target_dir=$(dirname "$target")
-
-  # ターゲットディレクトリが存在しない場合は作成
-  if [ ! -d "$target_dir" ]; then
-    mkdir -p "$target_dir"
-    info "ディレクトリを作成しました: $target_dir"
-  fi
-
-  # 既存のファイル/リンクをバックアップ
-  if [ -e "$target" ] || [ -L "$target" ]; then
-    if [ -L "$target" ]; then
-      # 既存のシンボリックリンクを削除
-      rm "$target"
-      info "既存のシンボリックリンクを削除しました: $target"
-    else
-      # 既存のファイルをバックアップ
-      mv "$target" "${target}.backup.$(date +%Y%m%d_%H%M%S)"
-      info "既存のファイルをバックアップしました: $target"
-    fi
-  fi
-
-  # シンボリックリンクを作成
-  ln -sf "$source" "$target"
-  success "シンボリックリンクを作成しました: $target -> $source"
-}
-
-# zsh設定のセットアップ
-setup_zsh() {
-  echo ""
-  echo "--- zsh設定のセットアップ ---"
-
-  ensure_mise
-
-  create_symlink "$DOTFILES_DIR/zsh/.zshrc" "$HOME/.zshrc"
-  create_symlink "$DOTFILES_DIR/zsh/sheldon.toml" "$HOME/.config/sheldon/plugins.toml"
-
-  # sheldonでプラグインをインストール
-  if command -v sheldon &>/dev/null; then
-    info "sheldonでプラグインをインストールしています..."
-    sheldon lock --update || info "sheldon lock --update でエラーが発生しましたが、続行します"
-  else
-    info "sheldon が見つかりません。devbox での導入を推奨します: docs/devbox-setup.md"
-  fi
-  success "zsh設定のセットアップが完了しました"
-}
-
-# mise 設定（ツール一覧）のセットアップ
-setup_mise() {
-  echo ""
-  echo "--- mise設定のセットアップ ---"
-
-  ensure_mise
-
-  if [ -f "$DOTFILES_DIR/mise/config.toml" ]; then
-    create_symlink "$DOTFILES_DIR/mise/config.toml" "$HOME/.config/mise/config.toml"
-    success "mise の config.toml を dotfiles 管理にしました"
-  else
-    info "dotfiles 側に mise/config.toml が見つかりません（スキップ）"
-    return 0
-  fi
-
-  # mise の trust（セキュリティ機構）
-  # dotfiles 配下の config.toml を参照するため、初回は trust が必要になることがあります。
-  if [ "${MISE_TRUST:-0}" = "1" ]; then
-    info "mise trust を実行します（dotfiles の mise/config.toml を信頼します）"
-    mise_cmd trust "$DOTFILES_DIR/mise/config.toml" || info "mise trust でエラーが発生しました。必要なら手動で: mise trust $DOTFILES_DIR/mise/config.toml"
-  else
-    info "mise の trust はスキップします（必要なら: mise trust $DOTFILES_DIR/mise/config.toml  または MISE_TRUST=1 ./setup.sh）"
-  fi
-
-  if [ "${MISE_INSTALL:-0}" = "1" ]; then
-    info "mise install を実行します（時間がかかる場合があります）"
-    mise_cmd install || info "mise install でエラーが発生しましたが、続行します"
-  else
-    info "ツール導入は手動で実行してください: mise install（または MISE_INSTALL=1 ./setup.sh）"
-  fi
-
-  success "mise設定のセットアップが完了しました"
-}
-
-# devbox global の同期（オプション）
-setup_devbox_global() {
-  echo ""
-  echo "--- devbox global のセットアップ（オプション） ---"
+# --- 3. devbox global --------------------------------------------------------
+sync_devbox_global() {
+  step "devbox global（sheldon / eza / yazi / nvim など）"
 
   if ! command -v devbox &>/dev/null; then
-    info "devbox が見つかりません。必要なら docs/devbox-setup.md を参照してください"
-    return 0
+    info "devbox が見つかりません。導入方法は docs/devbox-setup.md を参照してください"
+    info "（sheldon がここに入っているため、未導入だと zsh のプラグインが動きません）"
+    return
   fi
 
-  if [ "${DEVBOX_GLOBAL_SYNC:-0}" = "1" ]; then
-    if [ -f "$DOTFILES_DIR/scripts/devbox-global-sync.sh" ]; then
-      info "devbox global を dotfiles の宣言に同期します"
-      bash "$DOTFILES_DIR/scripts/devbox-global-sync.sh" || info "devbox global sync でエラーが発生しましたが、続行します"
-      success "devbox global の同期が完了しました"
-    else
-      info "scripts/devbox-global-sync.sh が見つかりません（スキップ）"
-    fi
+  run bash "$DOTFILES_DIR/scripts/devbox-global-sync.sh"
+  success "devbox global を同期しました"
+}
+
+# --- 4. chezmoi --------------------------------------------------------------
+apply_chezmoi() {
+  step "chezmoi（~ への配置）"
+
+  local chezmoi_bin
+  if command -v chezmoi &>/dev/null; then
+    chezmoi_bin="$(command -v chezmoi)"
+  elif [ "$DRY_RUN" = "1" ]; then
+    chezmoi_bin="chezmoi"
   else
-    info "devbox global の同期はスキップします（必要なら DEVBOX_GLOBAL_SYNC=1 ./setup.sh）"
-    info "または手動で: bash ./scripts/devbox-global-sync.sh"
+    chezmoi_bin="$("$MISE_BIN" which chezmoi 2>/dev/null)" \
+      || error "chezmoi が見つかりません。mise install が失敗している可能性があります"
   fi
+
+  # このリポジトリ自身をソースディレクトリとして登録する。
+  # 実際の設定値は home/.chezmoi.toml.tmpl が生成する（mode = "symlink" など）。
+  info "chezmoi のソースを $DOTFILES_DIR に設定します"
+  run "$chezmoi_bin" init --source="$DOTFILES_DIR"
+
+  info "適用される差分:"
+  [ "$DRY_RUN" = "1" ] || "$chezmoi_bin" status || true
+
+  run "$chezmoi_bin" apply
+  success "chezmoi apply が完了しました（~ の設定は symlink としてリポジトリを指します）"
 }
 
-# nvim設定のセットアップ
-setup_nvim() {
-  echo ""
-  echo "--- nvim設定のセットアップ ---"
+# --- 5. シェル周りの後処理 ---------------------------------------------------
+setup_shell() {
+  step "zsh プラグイン / 履歴"
 
-  ensure_mise
-
-  create_symlink "$DOTFILES_DIR/nvim/init.lua" "$HOME/.config/nvim/init.lua"
-
-  # luaディレクトリのシンボリックリンク
-  if [ -d "$DOTFILES_DIR/nvim/lua" ]; then
-    create_symlink "$DOTFILES_DIR/nvim/lua" "$HOME/.config/nvim/lua"
-  fi
-
-  info "nvimを起動するとlazy.nvimが自動的にインストールされます"
-  success "nvim設定のセットアップが完了しました"
-}
-
-# yazi設定のセットアップ
-setup_yazi() {
-  echo ""
-  echo "--- yazi設定のセットアップ ---"
-
-  ensure_mise
-
-  # 設定ディレクトリが存在しない場合は作成
-  if [ ! -d "$HOME/.config/yazi" ]; then
-    mkdir -p "$HOME/.config/yazi"
-    success "yazi設定ディレクトリを作成しました"
-  fi
-
-  # 以前の構成の掃除:
-  # - plugins を dotfiles に symlink していると ya pkg の deploy が失敗するため削除
-  if [ -L "$HOME/.config/yazi/plugins" ]; then
-    rm "$HOME/.config/yazi/plugins"
-  fi
-  mkdir -p "$HOME/.config/yazi/plugins"
-
-  # 既存のファイルをバックアップしてからシンボリックリンクを作成
-  create_symlink "$DOTFILES_DIR/yazi/yazi.toml" "$HOME/.config/yazi/yazi.toml"
-  create_symlink "$DOTFILES_DIR/yazi/keymap.toml" "$HOME/.config/yazi/keymap.toml"
-  create_symlink "$DOTFILES_DIR/yazi/theme.toml" "$HOME/.config/yazi/theme.toml"
-  create_symlink "$DOTFILES_DIR/yazi/init.lua" "$HOME/.config/yazi/init.lua"
-
-  success "yazi設定のセットアップが完了しました"
-}
-
-# ghostty設定のセットアップ
-setup_ghostty() {
-  echo ""
-  echo "--- ghostty設定のセットアップ ---"
-
-  # ghosttyのインストール確認
-  if ! command -v ghostty &>/dev/null; then
-    info "ghosttyがインストールされていません"
-    info "ghostty は OS 統合が強いため、このスクリプトではインストールしません（必要なら手動でインストールしてください）"
+  if command -v sheldon &>/dev/null; then
+    run sheldon lock --update
+    success "sheldon のプラグインを取得しました"
   else
-    success "ghosttyは既にインストールされています"
+    info "sheldon が PATH にありません（devbox global の導入後にもう一度 ./setup.sh してください）"
   fi
 
-  # 設定ディレクトリが存在しない場合は作成
-  if [ ! -d "$HOME/.config/ghostty" ]; then
-    mkdir -p "$HOME/.config/ghostty"
-    success "ghostty設定ディレクトリを作成しました"
+  # atuin へ既存の zsh 履歴を取り込む（冪等。二重登録はされない）
+  if command -v atuin &>/dev/null && [ -f "$HOME/.zsh_history" ]; then
+    run env HISTFILE="$HOME/.zsh_history" atuin import zsh
+    success "既存の zsh 履歴を atuin に取り込みました"
   fi
 
-  # 設定ファイルのシンボリックリンクを作成
-  create_symlink "$DOTFILES_DIR/ghostty/config" "$HOME/.config/ghostty/config"
-
-  # backgroundディレクトリのシンボリックリンクを作成
-  if [ -d "$DOTFILES_DIR/ghostty/background" ]; then
-    create_symlink "$DOTFILES_DIR/ghostty/background" "$HOME/.config/ghostty/background"
-  fi
-
-  success "ghostty設定のセットアップが完了しました"
+  # 生成済みのキャッシュを捨てて、次回のシェル起動で作り直させる
+  run rm -rf "${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
 }
 
-# zellijのインストール確認（設定ファイルは作成しない）
-check_zellij() {
-  echo ""
-  echo "--- zellijの確認 ---"
-
-  if command -v zellij &>/dev/null; then
-    success "zellijは既にインストールされています"
-  else
-    info "zellijがインストールされていません（オプション）"
-    info "zellij は別途インストールしてください（このリポジトリでは設定のみ管理します）"
-  fi
-}
-
-# aerospace設定のセットアップ
-setup_aerospace() {
-  echo ""
-  echo "--- aerospace設定のセットアップ ---"
-
-  # 設定ファイルのシンボリックリンクを作成
-  create_symlink "$DOTFILES_DIR/aerospace/aerospace.toml" "$HOME/.aerospace.toml"
-
-  success "aerospace設定のセットアップが完了しました"
-}
-
-# メイン処理
 main() {
-  # setup_mise
-  # setup_zsh
-  setup_nvim
-  # setup_yazi
-  # setup_ghostty
-  # check_zellij
-  # setup_devbox_global
-  setup_aerospace
+  echo "=========================================="
+  echo " dotfiles セットアップ"
+  [ "$DRY_RUN" = "1" ] && echo " （DRY_RUN: 実際には何も変更しません）"
+  echo "=========================================="
 
-  echo ""
+  ensure_mise
+  install_mise_tools
+  sync_devbox_global
+  apply_chezmoi
+  setup_shell
+
+  echo
   echo "=========================================="
-  success "セットアップが完了しました！"
+  success "セットアップ完了"
   echo "=========================================="
-  echo ""
-  echo "次のステップ:"
-  echo "1. 新しいターミナルを開くか、以下のコマンドで設定を読み込みます:"
-  echo "   source ~/.zshrc"
-  echo ""
-  echo "2. nvimを起動してlazy.nvimのインストールを確認します:"
-  echo "   nvim"
-  echo ""
+  cat <<'EOS'
+
+次のステップ:
+  1. 新しいターミナルを開く（または exec zsh）
+  2. nvim を起動して lazy.nvim の導入を確認する
+
+日々の運用:
+  chezmoi diff     ~ とリポジトリの差分を見る
+  chezmoi apply    リポジトリの内容を ~ に反映する
+  chezmoi add ~/X  新しい設定ファイルを管理下に入れる
+
+  ※ mode = "symlink" のため、~ の設定はリポジトリへの symlink です。
+    リポジトリのファイルを編集すればそのまま反映されます（apply 不要）。
+    apply が要るのは「管理するファイルが増減したとき」だけです。
+EOS
 }
 
-main
+main "$@"

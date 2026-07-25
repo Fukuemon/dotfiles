@@ -1,0 +1,29 @@
+# ghq-new <name> — GitHub に public リポジトリを作成し、ghq で取得して cd する
+#
+# autoload される関数。ファイル名がそのまま関数名になる。
+
+emulate -L zsh
+
+local reponame="$1"
+local github_host="github.com"
+
+if [[ -z $reponame ]]; then
+  print -u2 "リポジトリ名を指定してください: ghq-new <name>"
+  return 1
+fi
+if ! (( $+commands[gh] )); then
+  print -u2 "gh コマンドが見つかりません"
+  return 1
+fi
+
+# 以前は GITHUB_PRIVATE_TOKEN + curl で API を直接叩いていたが、
+# 認証済みの gh CLI があるのでトークン管理は不要。
+local owner
+owner=$(gh api user --jq .login) || return 1
+
+print "リポジトリ '$owner/$reponame' を作成しています..."
+gh repo create "$reponame" --public || return 1
+
+ghq get "$github_host/$owner/$reponame" || return 1
+cd "$(ghq root)/$github_host/$owner/$reponame" || return 1
+print "準備完了: $(pwd)"

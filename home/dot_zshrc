@@ -1,0 +1,308 @@
+# ============================================================================
+#  .zshrc
+#
+#  このファイルには「順序が意味を持つもの」だけを置く。
+#  順序に依存しない設定（履歴・補完・キーバインド・エイリアス・関数）は
+#  ~/.config/zsh/*.zsh に切り出してあり、下の 9. でまとめて読み込む。
+#
+#  【読み込み順の鉄則】ここを崩すと壊れます。
+#
+#    1. p10k instant prompt   … 必ず先頭。標準出力を出す処理より前
+#    2. PATH / 環境変数
+#    3. devbox / mise の有効化 … ここで sheldon・fzf・atuin 等が PATH に載る
+#    4. compinit              … fzf-tab より前に補完システムを初期化しておく
+#    5. sheldon source        … プラグイン本体（3 の後でないと sheldon が見つからない）
+#    6. 各ツールの init       … fzf は fzf-tab（5）より後でなければならない
+#    7. ~/.config/zsh/*.zsh   … 6 の後（キーバインドが fzf/atuin に依存するため）
+#
+#  以前は 5 が 3 より前にあったため、新規ログインシェル（PATH が /etc/paths だけの
+#  状態）では sheldon がコマンドとして見つからず、`eval "$(sheldon source)"` が
+#  空文字列を eval してプラグインが丸ごと無効になっていた。ネストしたシェルでは
+#  親から PATH を継承するため動いてしまい、「たまに効かない」症状になっていた。
+# ============================================================================
+
+# ---------------------------------------------------------------------------
+# 1. Powerlevel10k instant prompt（先頭固定）
+#    コンソール入力を伴う処理（パスワード確認等）はこのブロックより上に書くこと。
+# ---------------------------------------------------------------------------
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# ---------------------------------------------------------------------------
+# 2. 環境変数 / PATH
+# ---------------------------------------------------------------------------
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+
+export EDITOR="nvim"
+export VISUAL="nvim"
+export BUN_INSTALL="$HOME/.bun"
+
+# path / fpath の重複を自動除去（-U = unique）
+typeset -U path PATH fpath FPATH
+
+# (N-/) … N: 無ければ黙って消す / -: symlink を辿る / /: ディレクトリのみ
+#         存在しないディレクトリを PATH に残さない。
+# なお /opt/homebrew/bin は ~/.zprofile の `brew shellenv` でも入るが、
+# typeset -U で重複は自動的に除去される。
+path=(
+  /opt/homebrew/bin(N-/)
+  /opt/homebrew/sbin(N-/)
+  $HOME/.local/bin(N-/)
+  $HOME/.cargo/bin(N-/)
+  $BUN_INSTALL/bin(N-/)
+  $HOME/.console-ninja/.bin(N-/)
+  $HOME/go/bin(N-/)
+  $HOME/google-cloud-sdk/bin(N-/)
+  $path
+)
+
+# ---------------------------------------------------------------------------
+# 3. eval キャッシュ
+#    `mise activate`(48ms) や `sheldon source`(38ms) など、毎回同じシェルコードを
+#    吐くだけのコマンドを起動のたびに実行するのは無駄なので、出力をキャッシュする。
+#
+#    _zcache <名前> <スタンプファイル> <コマンド...>
+#      スタンプファイルがキャッシュより新しければ再生成する。
+#      mise 管理のツールは実体パスにバージョンが含まれるため、更新されると
+#      パスが変わって mtime が新しくなり、自動的に再生成される。
+#
+#    手動でクリアしたい場合: zsh-cache-clear
+#
+#    ★★ キャッシュしてよいのは「引数だけで出力が決まる純粋なコマンド」に限る ★★
+#    実行時の環境変数を読み取って出力に埋め込むコマンドをキャッシュしてはいけない。
+#    生成時にたまたま存在した環境が、以後すべてのシェルに焼き付いてしまう。
+#    実例: `devbox global shellenv` は現在の環境を丸ごと export し直すコマンドで、
+#    PATH / ZDOTDIR / TERM / cwd までスナップショットする。これをキャッシュしたところ、
+#    生成時に立っていた ZDOTDIR が固定され、子シェル（zellij のペインなど）が
+#    存在しない $ZDOTDIR/.zshrc を探しにいって .zshrc を一切読まなくなった。
+#    → 下の 4. のとおり、devbox は呼ばずに必要なものを直接設定している。
+# ---------------------------------------------------------------------------
+_ZSH_CACHE_DIR="$XDG_CACHE_HOME/zsh"
+[[ -d $_ZSH_CACHE_DIR ]] || mkdir -p "$_ZSH_CACHE_DIR"
+
+_zcache() {
+  local name="$1" stamp="$2"
+  shift 2
+  local cache="$_ZSH_CACHE_DIR/$name.zsh"
+
+  if [[ ! -s $cache ]] || [[ -n $stamp && -e $stamp && $stamp -nt $cache ]]; then
+    if ! "$@" >| "$cache" 2>/dev/null; then
+      rm -f "$cache"
+      return 1
+    fi
+  fi
+  source "$cache"
+}
+
+# キャッシュを手動で捨てる関数は ~/.config/zsh/functions/zsh-cache-clear にある。
+
+# ---------------------------------------------------------------------------
+# 4. devbox global / mise の有効化
+#    ★ sheldon より必ず前。ここで PATH が確定する。
+#      - devbox global (nix) : sheldon, zoxide, eza, yazi, nvim, git ...
+#      - mise (aqua)         : fzf, atuin, fd, bat, delta, chezmoi, zellij, ランタイム
+#    後に足した mise の方が PATH で優先される。
+# ---------------------------------------------------------------------------
+_devbox_global_dir="$XDG_DATA_HOME/devbox/global/default"
+_devbox_profile="$_devbox_global_dir/.devbox/nix/profile/default"
+
+# --- devbox global（nix プロファイル）---
+#
+# ★ `devbox global shellenv` は「呼ばない」。
+#   このコマンドは現在の環境を丸ごと export し直すもので、PATH だけでなく
+#   ZDOTDIR / TERM / cwd までスナップショットして出力する。したがって
+#     - 出力をキャッシュすると、生成時の環境が以後すべてのシェルに焼き付く
+#     - キャッシュしなくても、PATH をリテラルな絶対値で上書きするため、
+#       上の path=() の編集が黙って無視されうる
+#   という二重の地雷になっている。実行コストも 214ms と重い。
+#
+#   必要なのは「nix プロファイルの bin を PATH に載せること」と、nix 製バイナリが
+#   TLS 証明書や share/ を見つけられるようにする数個の環境変数だけなので、直接書く。
+#   devbox global add/remove をしてもプロファイルの中身が入れ替わるだけで、
+#   このコードは変更不要（devbox コマンド自体が無くても動く）。
+if [[ -d $_devbox_profile/bin ]]; then
+  path=("$_devbox_profile/bin" $path)
+
+  # nix 製バイナリ（wget / git など）が TLS 証明書を見つけられるようにする
+  _nix_ca="/nix/var/nix/profiles/default/etc/ssl/certs/ca-bundle.crt"
+  [[ -f $_nix_ca ]] && export NIX_SSL_CERT_FILE="$_nix_ca"
+  unset _nix_ca
+
+  export NIX_PROFILES="/nix/var/nix/profiles/default $HOME/.nix-profile"
+  export XDG_DATA_DIRS="${XDG_DATA_DIRS:-/usr/local/share:/usr/share}:$_devbox_profile/share"
+fi
+
+# --- PATH の掃除 ---
+# 実在しないディレクトリを PATH から落とす。コマンド検索のたびに無駄な stat が走るのを防ぐ。
+# 自分で並べた分は上で (N-/) を付けてあるが、macOS の path_helper が /etc/paths.d から
+# 流し込んでくる分（旧 Go インストーラの /usr/local/go/bin、実体の無い cryptex パス、
+# ~/.nix-profile/bin など）はここでまとめて除去する。
+#
+# ★ 必ず mise activate より「前」。
+#   mise は activate 時点の PATH を元 PATH として保存し、ディレクトリ移動のたびに
+#   「mise のツール群 + 保存した元 PATH」で PATH を組み直す。掃除を後に回すと、
+#   最初の cd で保存済みの汚れた PATH が復活してしまう。
+path=($^path(N-/))
+path=(${path:#/usr/local/go/bin})
+
+# --- mise（aqua）---
+# `mise activate` の出力は引数だけで決まる純粋なシェルコードなのでキャッシュしてよい。
+if [[ -x "$HOME/.local/bin/mise" ]]; then
+  _zcache mise-activate "$HOME/.local/bin/mise" \
+    "$HOME/.local/bin/mise" activate zsh
+fi
+
+# ---------------------------------------------------------------------------
+# 5. 補完システム（compinit）
+#    fzf-tab は compinit 済みであることを前提にするため、sheldon より前に実行する。
+#    完全な compinit は 352ms かかるので、ダンプが 24 時間以内なら -C で検証を省く。
+# ---------------------------------------------------------------------------
+# fpath に追加（compinit より前）
+#   - ~/.config/zsh/functions : 自作関数。1 関数 1 ファイルで、05-autoload.zsh が autoload する
+#   - nix / homebrew          : 各ツールが提供する補完定義
+fpath=(
+  "$XDG_CONFIG_HOME/zsh/functions"
+  "$_devbox_profile/share/zsh/site-functions"
+  /opt/homebrew/share/zsh/site-functions
+  $fpath
+)
+
+autoload -Uz compinit
+_zcompdump="$_ZSH_CACHE_DIR/zcompdump"
+# (#qN.mh-24) = 「存在する通常ファイルで、更新から 24 時間以内」
+if [[ -n $_zcompdump(#qN.mh-24) ]]; then
+  compinit -C -d "$_zcompdump"   # 検証をスキップ（高速）
+else
+  compinit -d "$_zcompdump"      # 1 日 1 回は完全チェック
+fi
+# ダンプをバイトコンパイルして次回の読み込みを速くする
+if [[ ! -s ${_zcompdump}.zwc || $_zcompdump -nt ${_zcompdump}.zwc ]]; then
+  zcompile -R -- "${_zcompdump}.zwc" "$_zcompdump" 2>/dev/null
+fi
+
+# ---------------------------------------------------------------------------
+# 6. sheldon（プラグイン）
+#    プラグインの中身と読み込み順は ~/.config/sheldon/plugins.toml を参照。
+#    ここで p10k / fzf-tab / autosuggestions / syntax-highlighting が入る。
+# ---------------------------------------------------------------------------
+if (( $+commands[sheldon] )); then
+  _zcache sheldon "$XDG_CONFIG_HOME/sheldon/plugins.toml" sheldon source
+else
+  # 昔はここで黙って失敗していた。二度と気付かないまま放置しないよう警告を出す。
+  print -u2 "⚠ sheldon が PATH にありません。プラグイン（補完・ハイライト・テーマ）は無効です。"
+  print -u2 "  復旧: devbox global add sheldon && zsh-cache-clear"
+fi
+
+# ---------------------------------------------------------------------------
+# 7. ツールの init
+# ---------------------------------------------------------------------------
+
+# --- fzf: Ctrl-T（ファイル）/ Alt-C（ディレクトリ）/ '**' 補完 ---
+#     ★ 必ず sheldon（fzf-tab）より後に init すること。
+#       fzf のシェル統合は Tab に fzf-completion を割り当てるが、その際に「既存の
+#       Tab バインド」を fzf_default_completion として退避し、'**' トリガーが
+#       無いときはそこへフォールバックする。fzf-tab より先に init すると退避先が
+#       素の expand-or-complete になり、fzf-tab が黙って無効化される。
+if (( $+commands[fzf] )); then
+  export FZF_DEFAULT_OPTS='--height=60% --layout=reverse --border --info=inline'
+  if (( $+commands[fd] )); then
+    export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+  fi
+  (( $+commands[bat] )) && export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:200 {}'"
+  (( $+commands[eza] )) && export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --color=always --icons {}'"
+
+  _zcache fzf "${commands[fzf]}" fzf --zsh
+fi
+
+# --- zoxide: 学習型 cd。`z <部分名>` でジャンプ、`zi` で対話選択 ---
+if (( $+commands[zoxide] )); then
+  _zcache zoxide "${commands[zoxide]}" zoxide init zsh --cmd z
+fi
+
+# --- atuin: Ctrl-R を SQLite ベースの全文履歴検索に置換 ---
+#     ★ fzf より後に init すること。fzf も ^R を握るので、後から init した方が勝つ。
+#     --disable-up-arrow: ↑ は従来どおり「直前のコマンド」のまま残す
+if (( $+commands[atuin] )); then
+  _zcache atuin "${commands[atuin]}" atuin init zsh --disable-up-arrow
+fi
+
+# --- git-wt: `git wt <branch>` で worktree を切り替えて cd する ---
+#     git を薄くラップするシェル関数を定義するだけの純粋な出力なのでキャッシュしてよい。
+if (( $+commands[git-wt] )); then
+  _zcache git-wt "${commands[git-wt]}" git-wt --init zsh
+fi
+
+# uv の補完（生成に 41ms かかるためキャッシュ）
+(( $+commands[uv] )) && _zcache uv-completion "${commands[uv]}" uv generate-shell-completion zsh
+
+# ---------------------------------------------------------------------------
+# 8. 遅延ロード（プロンプト表示後に読む）
+#    zsh-defer は sheldon 経由で入るため、無い場合は素直に同期 source する。
+# ---------------------------------------------------------------------------
+_lazy_source() {
+  [[ -f $1 ]] || return 0
+  if (( $+functions[zsh-defer] )); then
+    zsh-defer source "$1"
+  else
+    source "$1"
+  fi
+}
+
+# Google Cloud SDK
+_lazy_source "$HOME/google-cloud-sdk/path.zsh.inc"
+_lazy_source "$HOME/google-cloud-sdk/completion.zsh.inc"
+export CLOUDSDK_PYTHON="${CLOUDSDK_PYTHON:-$(command -v python3)}"
+
+# ---------------------------------------------------------------------------
+# 9. 順序に依存しない設定（~/.config/zsh/*.zsh を番号順に読む）
+#
+#    05-autoload     functions/ 配下の自作関数を autoload 宣言する
+#    10-options      履歴 / setopt
+#    20-completion   fzf-tab の zstyle    … 6 の後である必要がある
+#    30-keybindings  キーバインド          … 7 の後、かつ 05 の後である必要がある
+#    40-aliases      エイリアス
+#
+#    関数の実体は ~/.config/zsh/functions/ に 1 関数 1 ファイルで置く（autoload）。
+#    リポジトリ上の実体は home/dot_config/zsh/ 配下。
+# ---------------------------------------------------------------------------
+# (N-.) … N: 1つも無くてもエラーにしない / -: symlink を辿る / .: 通常ファイルのみ
+#          `-.` を付けないと壊れた symlink までマッチしてしまい、source が失敗する。
+for _rc in "$XDG_CONFIG_HOME"/zsh/*.zsh(N-.); do
+  source "$_rc"
+done
+unset _rc
+
+# ---------------------------------------------------------------------------
+# 10. Powerlevel10k のテーマ設定
+# ---------------------------------------------------------------------------
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# ---------------------------------------------------------------------------
+# 11. zellij
+#
+#     自動起動はしない。使いたいときに `zj`（= zellij, 40-aliases.zsh）で起動する。
+#
+#     【なぜやめたか】
+#     zellij のペインは長命な zsh プロセスで、起動時に一度 .zshrc を読んだきり
+#     読み直さない。セッションはターミナルを閉じても生き続けるため、.zshrc を
+#     更新しても「開きっぱなしの zellij の中だけ古い設定のまま」という状態が
+#     恒常的に発生していた。自動起動をやめると、シェルの状態が
+#     「今の .zshrc そのもの」になり、挙動が予測しやすい。
+#
+#     【かつてここにあったバグ・戻すときの注意】
+#     判定に SHLVL を使ってはいけない。zellij のサーバはデーモンとして動くため、
+#     ペイン内のシェルは SHLVL を継承せず SHLVL=1 で起動する。以前 `SHLVL -eq 1`
+#     を条件にしていたので、zellij のペインの中で .zshrc がさらに zellij を
+#     起動しようとして最終行で詰まっていた。その結果プロンプトが idle にならず、
+#     zsh-defer に積んだハイライトやサジェストがロードされないままになっていた。
+#     自動起動を復活させるなら、ZELLIJ 環境変数（ペイン内では ZELLIJ=0）を見ること:
+#
+#       if [[ -z $ZELLIJ ]] && [[ -o login ]] && (( $+commands[zellij] )); then
+#         zellij attach --create main
+#       fi
+# ---------------------------------------------------------------------------

@@ -1,0 +1,18 @@
+# fzf-cdr — 最近使ったディレクトリ（cdr）を fzf で選んで cd する ZLE ウィジェット
+#
+# バインド: Ctrl-U（30-keybindings.zsh で zle -N / bindkey している）
+#
+# cdr -l は `~/src/foo` のように ~ 付きで出力する。fzf の --preview は sh で実行される
+# ため ~ が展開されない。eval を挟んで展開させている。
+
+local selected
+selected=$(cdr -l \
+  | sed -e 's/^[[:digit:]]*[[:blank:]]*//' \
+  | fzf --prompt="recent dir> " --query="$LBUFFER" \
+        --preview 'eval eza -1 --color=always --icons --group-directories-first {}')
+
+if [[ -n $selected ]]; then
+  BUFFER="cd ${selected}"
+  zle accept-line
+fi
+zle reset-prompt

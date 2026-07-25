@@ -1,7 +1,12 @@
-# Homebrew の整理方針（brew list が多すぎる時の進め方）
+# Homebrew の棚卸し
 
-`brew list --formula` は「自分で入れたツール」だけでなく「それらの依存ライブラリ」も含まれます。  
-そのため、まず **トップレベル（葉 / leaves）だけ**に絞ってから、`mise` / `devbox` / `brew` のどれで管理するかを決めるのが安全です。
+| | |
+|---|---|
+| 目的 | brew の leaves を洗い出し、mise / devbox / brew のどれで管理するか決める |
+| 状態 | 棚卸し実施済み（2026-07-11）。結果は末尾の「棚卸しの結果」 |
+| 関連 | [ADR 000001](adr/000001-package-manager-unification-mise-vs-devbox.md) / [mise-migration.md](mise-migration.md) |
+
+`brew list --formula` には依存ライブラリも含まれるため、まず **leaves（他から依存されていないもの）** に絞ってから判断します。
 
 ## ゴール（本リポジトリの方針）
 
@@ -79,7 +84,7 @@ brew uninstall ripgrep
 - `tfenv`（mise で terraform を管理しているなら整理候補）
 - `neovim`, `sheldon`, `yazi`（devbox へ寄せる候補）
 
-逆に、cask（`wezterm`, `ghostty`, `hyper`, `pgadmin4`, `aerospace`）は brew 継続が自然です。
+逆に、cask（`ghostty`, `pgadmin4`, `aerospace`, `alt-tab`, `jordanbaird-ice`, `codexbar`）は brew 継続が自然です。
 
 ## 5) あなたの `brew leaves`（docs/before/brew-list.md）を分類すると
 
@@ -120,12 +125,18 @@ brew uninstall ripgrep
 
 ### 推奨の振り分け（まずはこの方針で OK）
 
+> [!NOTE]
+> ここから下は移行時点の検討メモです。実際に落ち着いた構成は末尾の
+> [棚卸しの結果](#棚卸しの結果2026-07-11-実施) を参照してください。
+> 例えば `fzf` `ripgrep` `jq` `gh` `ghq` `bat` は最終的に devbox ではなく
+> **mise（aqua）** に入っており、`peco` は fzf に一本化して削除しました。
+
 - **devbox に寄せる（CLI 中心）**:
   - `neovim`, `sheldon`, `yazi`（mise で管理できないことが実測で判明）
   - `tmux`, `fzf`, `ripgrep`, `jq`, `gh`, `ghq`, `bat`, `htop`, `tree`, `wget`, `peco`, `universal-ctags`, `the_silver_searcher`, `coreutils`, `graphviz`
   - `awscli`（CLI なので devbox に寄せても OK。必要なら brew 継続でも良い）
 - **brew に残す（OS 統合/重量級/サービス）**:
-  - cask（`wezterm`, `ghostty`, `hyper`, `pgadmin4`, `aerospace`）はそのまま
+  - cask（`ghostty`, `pgadmin4`, `aerospace` など）はそのまま
   - formula だと `postgresql@15`, `qemu` は「使い方次第」で brew 継続が無難（特に postgresql を OS サービスとして扱う場合）
   - `zsh-completions` はシェル統合寄りなので、当面 brew 継続で OK
   - `tmux-mem-cpu-load` は tmux と強く結びつくので、まずは現状維持（必要なら後で devbox 化）
@@ -140,3 +151,48 @@ brew uninstall ripgrep
 1. devbox 側に “最低限（nvim/sheldon/yazi）” を入れて動作確認（`docs/devbox-setup.md`）
 2. `which -a` で「どのコマンドがどこから来てるか」を確認しながら、1 個ずつ brew を削除
 3. 最後に `pyenv/tfenv/python@3.x` などの“環境基盤”を整理（影響が大きいので後回し）
+
+---
+
+## 棚卸しの結果（2026-07-11 実施）
+
+### 削除したもの
+
+| | 理由 |
+|---|---|
+| `brew go` | mise が `go = "1.26.4"` を管理しており完全に重複。実際に使われていたのも mise 版で、brew 版は何からも依存されていない leaf だった。 |
+| `wezterm`（cask） | ghostty へ移行済み。dotfiles に wezterm の設定は置いていない。 |
+| `hyper`（cask） | 同上。`cpoke` エイリアス（`~/.hyper.js` を書き換えるスクリプト）も合わせて削除した。 |
+
+### 残した leaf
+
+`aom` / `coreutils` / `freetds` / `harfbuzz` / `libzip` / `mole`
+
+いずれも「GUI/OS 統合が強いもの、または他アプリのビルド依存」に該当するため brew のままにしています。
+必要になったら `brew uses --installed <pkg>` で被依存を確認してから外してください。
+
+### cask（brew に残すもの）
+
+`aerospace` / `alt-tab` / `codexbar` / `ghostty` / `jordanbaird-ice` / `pgadmin4`
+
+GUI アプリなので方針どおり brew（cask）で管理します。
+
+### 手つかずだった野良インストールの回収
+
+`~/go/bin` に `go install` で入れた実行ファイルが 6 つあり、**どこにも宣言されていませんでした**
+（新しいマシンで再現できない状態）。とくに `git-wt` は `.zshrc` が `eval` していたため、
+これが無いと `git wt` が壊れます。
+
+`aqua` 以外を mise に移し、`~/go/bin` の重複コピーは削除しました（111MB → 30MB）。
+
+| ツール | 移行先 |
+|---|---|
+| `git-wt` | `go:github.com/k1LoW/git-wt` |
+| `dlv` | `go:github.com/go-delve/delve/cmd/dlv` |
+| `gopls` | `go:golang.org/x/tools/gopls` |
+| `staticcheck` | `go:honnef.co/go/tools/cmd/staticcheck` |
+| `swag` | `aqua:swaggo/swag` |
+| `aqua` | 宣言せず放置（履歴上まったく使われておらず、mise の aqua バックエンドとは別物） |
+
+`zellij` も `cargo install` 由来の 0.43.1 が `~/.cargo/bin` にあり未宣言だったため、
+`aqua:zellij-org/zellij`（0.44.3）に移して cargo 版を削除しました。

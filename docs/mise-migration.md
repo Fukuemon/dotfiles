@@ -1,7 +1,12 @@
-# mise への統一移行手順（brew 併用ルール付き）
+# brew から mise への移行手順
 
-このドキュメントは、`brew` と `mise` が混在している状態から、**開発用のランタイム/CLI を原則 `mise` 管理へ寄せる**ための移行手順です。  
-方針の背景は ADR も参照してください: `docs/adr/000001-package-manager-unification-mise-vs-devbox.md`
+| | |
+|---|---|
+| 目的 | brew と mise の混在を解消し、ランタイム/CLI を mise に寄せる |
+| 状態 | 移行完了（2026-07）。以降は履歴と、同じ判断をするときの手順書として残す |
+| 関連 | [ADR 000001](adr/000001-package-manager-unification-mise-vs-devbox.md) / [brew-audit.md](brew-audit.md) |
+
+移行の結果は [brew-audit.md の「棚卸しの結果」](brew-audit.md#棚卸しの結果2026-07-11-実施) を参照してください。
 
 ## ゴール
 
@@ -12,8 +17,8 @@
 ## 前提（このリポジトリの現状）
 
 - `setup.sh` は **mise 前提**で、`curl https://mise.run | sh` による `mise` 導入と、mise 経由でのツール導入を行います。
-- `zsh/.zshrc` には `mise activate zsh` が既に設定されています。
-- `zsh/.zshrc` の PATH は現状 **`/opt/homebrew/bin` が先**に来るため、同名コマンドがある場合に **brew 版が優先**されやすいです。
+- `home/dot_zshrc` には `mise activate zsh` が既に設定されています。
+- `home/dot_zshrc` の PATH は現状 **`/opt/homebrew/bin` が先**に来るため、同名コマンドがある場合に **brew 版が優先**されやすいです。
 
 ## 移行全体フロー（おすすめ）
 
@@ -58,7 +63,7 @@ curl https://mise.run | sh
 
 ### zsh 連携の確認
 
-`zsh/.zshrc` に `mise activate zsh` があること、起動時にエラーが出ないことを確認します。
+`home/dot_zshrc` に `mise activate zsh` があること、起動時にエラーが出ないことを確認します。
 
 ```bash
 exec zsh -l
@@ -83,7 +88,7 @@ which -a yazi
 - 「mise 管理にしたいコマンド」は **mise 側が優先**される状態にする
 - `brew` は GUI/OS 統合系が中心なので、CLI を mise に寄せるほど **PATH の意図が重要**になります
 
-> 現状の `zsh/.zshrc` だと Homebrew が先頭寄りなので、移行後は「期待と違うバイナリが動く」ことが起きやすいです。  
+> 現状の `home/dot_zshrc` だと Homebrew が先頭寄りなので、移行後は「期待と違うバイナリが動く」ことが起きやすいです。
 > 必要なら PATH の優先順を見直してください（変更は別 PR/別コミット推奨）。
 
 ## 4) ランタイムを mise へ移行する（推奨：ここから着手）
@@ -140,7 +145,7 @@ brew uninstall <formula>
 ## dotfiles で「mise のツール一覧」を管理する（推奨）
 
 `mise use -g ...` は `~/.config/mise/config.toml` に記録されますが、これを手元で直接編集すると dotfiles と乖離します。  
-この dotfiles では、`mise/config.toml` を **唯一の真実**として管理し、`setup.sh` で `~/.config/mise/config.toml` に symlink します。
+この dotfiles では、`home/dot_config/mise/config.toml` を **唯一の真実**として管理し、chezmoi が `~/.config/mise/config.toml` に symlink します（`chezmoi apply`）。
 
 手動反映（導入）:
 
@@ -152,7 +157,7 @@ mise install
 セットアップ時に自動で `mise install` まで実行したい場合:
 
 ```bash
-MISE_TRUST=1 MISE_INSTALL=1 ./setup.sh
+./setup.sh            # DRY_RUN=1 ./setup.sh で内容だけ確認できる
 ```
 
 ## チェックリスト（移行完了判定）
@@ -265,6 +270,10 @@ aqua/mise でうまく扱えない（あるいは運用ポリシー上 devbox �
 - `wezterm`
 
 これらは OS 統合が強いので、引き続き `brew` 管理で OK です。
+
+> [!NOTE]
+> 上記は移行時点のスナップショットです。その後 `wezterm` と `hyper` は
+> ghostty へ移行したため削除しました（[brew-audit.md の棚卸しの結果](brew-audit.md)）。
 
 ## ロールバック（困った時）
 

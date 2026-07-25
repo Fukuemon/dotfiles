@@ -2,7 +2,7 @@
 
 このディレクトリは **「Yazi プラグイン用のメモ」**として使います（プラグイン本体は同梱しません）。
 
-Minerva 記事（Finder 置き換え）で紹介されているプラグイン/拡張に寄せた設定を `yazi/keymap.toml` に反映しています。  
+Minerva 記事（Finder 置き換え）で紹介されているプラグイン/拡張に寄せた設定を `keymap.toml` に反映しています。
 参考: [`https://minerva.mamansoft.net/2025-09-14-yazi-tui-file-manager-finder-replacement`](https://minerva.mamansoft.net/2025-09-14-yazi-tui-file-manager-finder-replacement)
 
 ## 導入の考え方
@@ -82,10 +82,10 @@ ya pkg add stelcodes/bunny
 
 ## ブックマーク（bunny）の設定（dotfiles で共有）
 
-公式/Minerva の流儀に合わせて、**ブックマーク（hops）は `yazi/init.lua` に定義**します。  
+公式/Minerva の流儀に合わせて、**ブックマーク（hops）は `init.lua` に定義**します。
 `bunny.yazi` は `init.lua` で `require("bunny"):setup({ hops = ... })` を呼ぶ想定です（README 準拠）。
 
-- `yazi/init.lua`: hops（ブックマーク）/ `full-border` / `zoxide(update_db)` / `smart-enter(open_multi)` をまとめて `setup()` します
+- `init.lua`: hops（ブックマーク）/ `full-border` / `zoxide(update_db)` / `smart-enter(open_multi)` をまとめて `setup()` します
 
 参照:
 

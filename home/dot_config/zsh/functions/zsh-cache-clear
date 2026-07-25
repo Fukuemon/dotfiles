@@ -1,0 +1,14 @@
+# zsh-cache-clear — .zshrc が生成した初期化キャッシュを捨てて zsh を入れ直す
+#
+# .zshrc の _zcache が devbox / mise / sheldon / fzf などの eval 結果を
+# ~/.cache/zsh/ に保存している。通常はスタンプファイルの mtime で自動的に
+# 無効化されるが、想定外の経路でツールが更新されて古いままになったときの逃げ道。
+
+emulate -L zsh
+
+local cache_dir="${_ZSH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/zsh}"
+
+rm -rf "$cache_dir"
+print "zsh のキャッシュを削除しました: $cache_dir"
+print "exec zsh で再読み込みします..."
+exec zsh

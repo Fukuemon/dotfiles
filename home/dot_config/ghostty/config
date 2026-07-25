@@ -1,0 +1,29 @@
+background = 282c34
+foreground = ffffff
+
+# --- 背景画像 ---
+# opacity を上げすぎると、Claude Code / Codex のような TUI の入力欄で
+# コントラストが落ちて読みづらくなる。0.2 → 0.12 に下げている。
+background-image = ~/.config/ghostty/background/メガカイリュー.jpg
+background-image-opacity = 0.12
+background-image-position = center-right
+
+# --- カーソル ---
+# Claude Code / Codex などの TUI の入力プロンプトでカーソルを見失わないように、
+# 背景画像に埋もれない高彩度の色を明示する。
+# 既定（cursor-color 未指定）は前景色と背景色の反転なので、背景画像の上では
+# 位置によってカーソルの色が変わり、非常に見つけにくくなる。
+cursor-style = block
+cursor-style-blink = true
+cursor-color = ffb454
+cursor-text = 282c34
+cursor-opacity = 1
+adjust-cursor-thickness = 2
+
+# 入力中はマウスポインタを隠す（テキストと重なって邪魔になるため）
+mouse-hide-while-typing = true
+
+# --- 選択範囲 ---
+# 選択したテキストも背景画像に埋もれないよう、明示的に色を付ける
+selection-background = 3e4451
+selection-foreground = ffffff
