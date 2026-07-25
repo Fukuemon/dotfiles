@@ -66,5 +66,3 @@ go = "1.26.4"
 "aqua:hashicorp/terraform" = "latest"
 "aqua:terraform-docs/terraform-docs" = "latest"
 "aqua:aquasecurity/tfsec" = "latest"
-
-
