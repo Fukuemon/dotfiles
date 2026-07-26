@@ -1,0 +1,202 @@
+{
+  "agentPushNotifEnabled": true,
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "medium",
+  "env": {
+    "BASH_DEFAULT_TIMEOUT_MS": "1800000",
+    "BASH_MAX_TIMEOUT_MS": "7200000",
+    "MCP_TIMEOUT": "60000",
+    "MCP_TOOL_TIMEOUT": "300000"
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "command": "osascript -e \"display notification \\\"アクションが必要です\\\" with title \\\"Claude Code\\\" subtitle \\\"プロジェクト: $(basename ${CLAUDE_PROJECT_DIR:-$(pwd)})\\\" sound name \\\"Glass\\\"\"",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -r '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -x '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh'; else cat >/dev/null 2>&1 || :; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -r '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -x '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh'; else cat >/dev/null 2>&1 || :; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -r '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -x '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh'; else cat >/dev/null 2>&1 || :; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -r '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -x '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh'; else cat >/dev/null 2>&1 || :; fi",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ .chezmoi.homeDir }}/.local/share/mise/shims/rtk hook claude"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "bash '{{ .chezmoi.homeDir }}/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "osascript -e \"display notification \\\"タスク完了: $CLAUDE_LAST_TOOL\\\" with title \\\"Claude Code\\\" subtitle \\\"プロジェクト: $(basename ${CLAUDE_PROJECT_DIR:-$(pwd)})\\\" sound name \\\"Glass\\\"\"",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -r '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -x '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh'; else cat >/dev/null 2>&1 || :; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -r '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -x '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh'; else cat >/dev/null 2>&1 || :; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -r '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -x '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh'; else cat >/dev/null 2>&1 || :; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -r '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -x '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh'; else cat >/dev/null 2>&1 || :; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -r '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -x '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh'; else cat >/dev/null 2>&1 || :; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -r '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ] && [ -x '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-hook.sh'; else cat >/dev/null 2>&1 || :; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "model": "opus[1m]",
+  "permissions": {
+    "additionalDirectories": [
+      "/tmp",
+      "/private/tmp"
+    ],
+    "allow": [
+      "Bash(pnpm format *)",
+      "Bash(pnpm format:check)",
+      "Bash(gh issue *)",
+      "Bash(node -e \"const p=require\\('./package.json'\\);console.log\\(JSON.stringify\\(p.scripts,null,2\\)\\)\")",
+      "Bash(pnpm exec *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(sed -n '33,52p' specs/11-corporate-site-ia/index.md)",
+      "Bash(sed -n '383,392p' specs/11-corporate-site-ia/index.md)",
+      "Bash(perl -i -pe 's/\\\\[features\\\\/corporate-site\\\\.md\\\\]\\\\\\(features\\\\/corporate-site\\\\.md\\\\\\)/[features\\\\/corporate-site\\\\/DesignDoc_corporate-site.md]\\(features\\\\/corporate-site\\\\/DesignDoc_corporate-site.md\\)/g; s/\\\\[features\\\\/cms\\\\.md\\\\]\\\\\\(features\\\\/cms\\\\.md\\\\\\)/[features\\\\/cms\\\\/DesignDoc_cms.md]\\(features\\\\/cms\\\\/DesignDoc_cms.md\\)/g' design/DesignDoc.md)",
+      "Bash(python3 -)",
+      "Bash(gh auth *)",
+      "Bash(git -C {{ .chezmoi.homeDir }}/src/github.com/Fukuemon/depwalk remote -v)",
+      "Bash(npx rulesync@latest generate)",
+      "Bash(gh pr *)",
+      "Bash(python3 -c ' *)",
+      "mcp__chrome-devtools__evaluate_script",
+      "mcp__pencil"
+    ]
+  },
+  "remoteControlAtStartup": true,
+  "skipDangerousModePermissionPrompt": true,
+  "statusLine": {
+    "type": "command",
+    "command": "if [ -f '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-statusline.sh' ] && [ -r '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-statusline.sh' ] && [ -x '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-statusline.sh' ]; then /bin/sh '{{ .chezmoi.homeDir }}/.orca/agent-hooks/claude-statusline.sh'; else cat >/dev/null 2>&1 || :; fi"
+  },
+  "tui": "fullscreen"
+}
