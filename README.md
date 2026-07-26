@@ -2,12 +2,12 @@
 
 macOS の開発環境設定。
 
-| | |
-|---|---|
-| 配置 | [chezmoi](https://www.chezmoi.io/)（`mode = "symlink"`） |
+|            |                                                                                                                                 |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| 配置       | [chezmoi](https://www.chezmoi.io/)（`mode = "symlink"`）                                                                        |
 | パッケージ | [mise](https://mise.jdx.dev/)（aqua バックエンド）/ [devbox global](https://www.jetify.com/devbox)（Nix）/ Homebrew（GUI のみ） |
-| シェル | zsh + [sheldon](https://github.com/rossmacarthur/sheldon) + Powerlevel10k |
-| 端末 | Ghostty / zellij / yazi / Neovim（LazyVim） |
+| シェル     | zsh + [sheldon](https://github.com/rossmacarthur/sheldon) + Powerlevel10k                                                       |
+| 端末       | Ghostty / zellij / yazi / Neovim（LazyVim）                                                                                     |
 
 ## セットアップ
 
@@ -40,6 +40,9 @@ home/                           chezmoi の管理対象。~ に配置される�
 ├── dot_p10k.zsh                → ~/.p10k.zsh
 ├── dot_gitconfig               → ~/.gitconfig
 ├── dot_aerospace.toml          → ~/.aerospace.toml
+├── dot_claude/                 → ~/.claude/（CLAUDE.md / RTK.md / settings.json）
+├── dot_codex/                  → ~/.codex/（AGENTS.md / RTK.md / hooks.json）
+├── dot_cursor/                 → ~/.cursor/（hooks.json / mcp.json）
 └── dot_config/                 → ~/.config/
     ├── zsh/                      .zshrc から切り出した設定と自作関数
     ├── sheldon/plugins.toml      zsh プラグイン
@@ -52,6 +55,7 @@ home/                           chezmoi の管理対象。~ に配置される�
 
 devbox/global-packages.txt      devbox global の宣言（唯一の真実）
 scripts/devbox-global-sync.sh   上記を devbox に反映する
+scripts/ai-config-sync.sh       AI CLI の設定を ~ から取り込み直す
 docs/                           ADR と運用メモ
 setup.sh                        ブートストラップ
 ```
@@ -78,11 +82,29 @@ chezmoi managed       # 管理対象を一覧する
 
 ### ツールを追加する
 
-| 追加先 | 対象 | 反映 |
-|---|---|---|
-| `home/dot_config/mise/config.toml` | ランタイムと大半の CLI | `mise install` |
-| `devbox/global-packages.txt` | mise/aqua に無いもの | `bash ./scripts/devbox-global-sync.sh` |
-| Homebrew | GUI アプリ（cask）と OS 統合が強いもの | `brew install` |
+| 追加先                             | 対象                                   | 反映                                   |
+| ---------------------------------- | -------------------------------------- | -------------------------------------- |
+| `home/dot_config/mise/config.toml` | ランタイムと大半の CLI                 | `mise install`                         |
+| `devbox/global-packages.txt`       | mise/aqua に無いもの                   | `bash ./scripts/devbox-global-sync.sh` |
+| Homebrew                           | GUI アプリ（cask）と OS 統合が強いもの | `brew install`                         |
+
+### AI CLI の設定（Claude Code / Codex CLI / Cursor）
+
+symlink ではなく **`~` の実体を取り込み直す**運用。設定は CLI 自身やツール（`rtk init` / plugin 導入 / `/config`）が書き換えるため、リポジトリを編集しても上書きされる前提で扱う。
+
+```bash
+bash ./scripts/ai-config-sync.sh   # ~ の設定を取り込み直す（$HOME はテンプレート化される）
+chezmoi diff                       # 空になるのが正常
+```
+
+| 管理する                                        | 管理しない（理由）                                                      |
+| ----------------------------------------------- | ----------------------------------------------------------------------- |
+| `~/.claude/settings.json`（hook / permissions） | `~/.codex/auth.json`・`~/.claude/.credentials.json` — 認証情報          |
+| `~/.claude/CLAUDE.md`・`RTK.md`                 | `~/.codex/config.toml` — `projects.<絶対パス>` の信頼リスト＝マシン状態 |
+| `~/.codex/AGENTS.md`・`RTK.md`・`hooks.json`    | `projects/` `sessions/` `history.jsonl` — セッション履歴                |
+| `~/.cursor/hooks.json`・`mcp.json`              | `plugins/` `extensions/` — ツールが管理する実体（サイズも大きい）       |
+
+新しいマシンでは `mise install` で `rtk` が入り、`chezmoi apply` で上記の設定が配置される。RTK の hook は設定ごと配られるので `rtk init` の再実行は不要（作り直したいときだけ `rtk init -g` / `--codex` / `--agent cursor`）。
 
 ### プラグイン・履歴
 
@@ -130,13 +152,13 @@ zellij のサーバはデーモンとして動くため、ペイン内のシェ�
 
 `dot_zshrc` には順序が意味を持つものだけを置く。順序に依存しない設定は `dot_config/zsh/` に切り出し、`.zshrc` が番号順に読み込む。
 
-| ファイル | 内容 |
-|---|---|
-| `05-autoload.zsh` | `functions/` 配下を autoload 宣言する |
-| `10-options.zsh` | 履歴と `setopt` |
-| `20-completion.zsh` | fzf-tab の `zstyle` |
-| `30-keybindings.zsh` | ZLE への登録とキー割り当て |
-| `40-aliases.zsh` | エイリアス |
+| ファイル             | 内容                                  |
+| -------------------- | ------------------------------------- |
+| `05-autoload.zsh`    | `functions/` 配下を autoload 宣言する |
+| `10-options.zsh`     | 履歴と `setopt`                       |
+| `20-completion.zsh`  | fzf-tab の `zstyle`                   |
+| `30-keybindings.zsh` | ZLE への登録とキー割り当て            |
+| `40-aliases.zsh`     | エイリアス                            |
 
 `scripts/` ではなくここに置くのは、`scripts/` が `home/` の外にあり `~` へ配置されないため。`.zshrc` から安定したパスで読むには `~/.config/zsh/` に配る必要がある。
 
@@ -144,12 +166,12 @@ zellij のサーバはデーモンとして動くため、ペイン内のシェ�
 
 `dot_config/zsh/functions/` に **ファイル名 = 関数名** で 1 つずつ置く。
 
-| 関数 | 内容 |
-|---|---|
-| `ghq-new` | GitHub にリポジトリを作成し、ghq で取得して cd する |
-| `fzf-src` | ghq のリポジトリへ移動する（ZLE ウィジェット） |
-| `fzf-cdr` | 最近使ったディレクトリへ移動する（ZLE ウィジェット） |
-| `zsh-cache-clear` | 初期化キャッシュを捨てて zsh を入れ直す |
+| 関数              | 内容                                                 |
+| ----------------- | ---------------------------------------------------- |
+| `ghq-new`         | GitHub にリポジトリを作成し、ghq で取得して cd する  |
+| `fzf-src`         | ghq のリポジトリへ移動する（ZLE ウィジェット）       |
+| `fzf-cdr`         | 最近使ったディレクトリへ移動する（ZLE ウィジェット） |
+| `zsh-cache-clear` | 初期化キャッシュを捨てて zsh を入れ直す              |
 
 このディレクトリは `fpath` に入っており、`05-autoload.zsh` が `autoload -Uz` する。**関数を追加するときはファイルを 1 つ置くだけでよい**（`.zshrc` も loader も編集不要）。autoload なので呼ばれるまで読み込まれず、関数を増やしても起動時間は変わらない。
 
@@ -159,25 +181,25 @@ ZLE ウィジェットにするものだけ、`30-keybindings.zsh` で `zle -N` 
 
 `dot_config/sheldon/plugins.toml` の**定義順がそのまま source 順**になる。
 
-| プラグイン | 役割 |
-|---|---|
-| `romkatv/zsh-defer` | 遅延ロード基盤（最初に読む） |
-| `romkatv/powerlevel10k` | プロンプトテーマ |
-| `Aloxaf/fzf-tab` | Tab 補完を fzf のインタラクティブ選択に置換する |
-| `zsh-users/zsh-autosuggestions` | 履歴からの自動サジェスト（遅延） |
-| `zsh-users/zsh-syntax-highlighting` | シンタックスハイライト（**必ず最後**・遅延） |
+| プラグイン                          | 役割                                            |
+| ----------------------------------- | ----------------------------------------------- |
+| `romkatv/zsh-defer`                 | 遅延ロード基盤（最初に読む）                    |
+| `romkatv/powerlevel10k`             | プロンプトテーマ                                |
+| `Aloxaf/fzf-tab`                    | Tab 補完を fzf のインタラクティブ選択に置換する |
+| `zsh-users/zsh-autosuggestions`     | 履歴からの自動サジェスト（遅延）                |
+| `zsh-users/zsh-syntax-highlighting` | シンタックスハイライト（**必ず最後**・遅延）    |
 
 ### キーバインド
 
-| キー | 動作 |
-|---|---|
-| `Ctrl-R` | atuin — 全文履歴検索。Enter は行に載せるだけで実行しない |
-| `Tab` | fzf-tab — 補完候補を fzf で選択する。`**` + `Tab` は fzf 本来のパス補完 |
-| `Ctrl-]` | ghq のリポジトリへ移動する |
-| `Ctrl-U` | 最近使ったディレクトリ（cdr）へ移動する |
-| `Ctrl-T` / `Alt-C` | fzf でファイル / ディレクトリを選ぶ |
-| `z <部分名>` | zoxide — よく使うディレクトリへジャンプする（`zi` で対話選択） |
-| `git wt <branch>` | git-wt — worktree を切り替えて cd する |
+| キー               | 動作                                                                    |
+| ------------------ | ----------------------------------------------------------------------- |
+| `Ctrl-R`           | atuin — 全文履歴検索。Enter は行に載せるだけで実行しない                |
+| `Tab`              | fzf-tab — 補完候補を fzf で選択する。`**` + `Tab` は fzf 本来のパス補完 |
+| `Ctrl-]`           | ghq のリポジトリへ移動する                                              |
+| `Ctrl-U`           | 最近使ったディレクトリ（cdr）へ移動する                                 |
+| `Ctrl-T` / `Alt-C` | fzf でファイル / ディレクトリを選ぶ                                     |
+| `z <部分名>`       | zoxide — よく使うディレクトリへジャンプする（`zi` で対話選択）          |
+| `git wt <branch>`  | git-wt — worktree を切り替えて cd する                                  |
 
 ### 起動時間
 
@@ -191,10 +213,10 @@ ZLE ウィジェットにするものだけ、`30-keybindings.zsh` で `zle -N` 
 
 **自動起動はしない。** 使うときに手動で起動する。
 
-| コマンド | 動作 |
-|---|---|
-| `zj` | 起動する（毎回新しいセッション） |
-| `zja` | `main` セッションに再接続する（無ければ作成）。作業状態を残したいとき |
+| コマンド | 動作                                                                  |
+| -------- | --------------------------------------------------------------------- |
+| `zj`     | 起動する（毎回新しいセッション）                                      |
+| `zja`    | `main` セッションに再接続する（無ければ作成）。作業状態を残したいとき |
 
 zellij のペインは長命な zsh プロセスで、起動時に一度だけ `.zshrc` を読み、あとは読み直さない。開いているペインに `.zshrc` の変更を反映するには `exec zsh` する。
 
@@ -212,13 +234,13 @@ zellij のペインは長命な zsh プロセスで、起動時に一度だけ `
 
 ## ドキュメント
 
-| | |
-|---|---|
+|                                                                             |                                               |
+| --------------------------------------------------------------------------- | --------------------------------------------- |
 | [ADR 000001](docs/adr/000001-package-manager-unification-mise-vs-devbox.md) | パッケージ管理を mise / devbox に統一した理由 |
-| [ADR 000002](docs/adr/000002-zsh-startup-and-chezmoi.md) | zsh の起動順序の修正と chezmoi への移行 |
-| [devbox-setup.md](docs/devbox-setup.md) | devbox global の導入と運用 |
-| [mise-migration.md](docs/mise-migration.md) | brew から mise への移行手順 |
-| [brew-audit.md](docs/brew-audit.md) | Homebrew の棚卸し |
+| [ADR 000002](docs/adr/000002-zsh-startup-and-chezmoi.md)                    | zsh の起動順序の修正と chezmoi への移行       |
+| [devbox-setup.md](docs/devbox-setup.md)                                     | devbox global の導入と運用                    |
+| [mise-migration.md](docs/mise-migration.md)                                 | brew から mise への移行手順                   |
+| [brew-audit.md](docs/brew-audit.md)                                         | Homebrew の棚卸し                             |
 
 ## ライセンス
 
