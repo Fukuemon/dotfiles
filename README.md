@@ -106,6 +106,14 @@ chezmoi diff                       # 空になるのが正常
 
 新しいマシンでは `mise install` で `rtk` が入り、`chezmoi apply` で上記の設定が配置される。RTK の hook は設定ごと配られるので `rtk init` の再実行は不要（作り直したいときだけ `rtk init -g` / `--codex` / `--agent cursor`）。
 
+> **注意**: `chezmoi apply` は既存ファイルを**バックアップせず上書きする**（別 destination で実測）。`.bak` を作るのは `rtk init` だけで、chezmoi は退避を残さない。すでに Claude Code / Cursor を使っていて独自の設定があるマシンで初めて適用するときは、先に差分を確認する。
+>
+> ```bash
+> chezmoi diff                  # 何が変わるかを見る
+> chezmoi apply --dry-run -v    # 実際に書き込む内容を確認する
+> chezmoi apply --interactive   # ファイルごとに y/n で判断する
+> ```
+
 ### プラグイン・履歴
 
 ```bash
