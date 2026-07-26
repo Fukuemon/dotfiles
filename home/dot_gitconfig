@@ -47,3 +47,5 @@
 [credential "https://gist.github.com"]
 	helper =
 	helper = !gh auth git-credential
+[wt]
+	basedir = .git/wt
