@@ -42,6 +42,12 @@
 "aqua:evilmartians/lefthook" = "latest"
 opencode = "latest"
 
+# --- AI エージェント補助 ---
+# rtk（Rust Token Killer）: bash 出力を圧縮してエージェントの token 消費を削る CLI プロキシ。
+# crates.io の "rtk" は別物（Rust Type Kit）なので git ソースを直接指定する（cargo install --git 相当）。
+# git ソースは binstall 対象外でソースビルドになる。更新は tag を上げて `mise install`。
+"cargo:https://github.com/rtk-ai/rtk" = { version = "tag:v0.44.0", bin = "rtk" }
+
 # --- Go 製の開発ツール ---
 # もともと `go install` で ~/go/bin に入れていたもの。どこにも宣言が無く新しいマシンで
 # 再現できなかったため mise に移した。aqua（プレビルド配布）にあるものは aqua を使い、
