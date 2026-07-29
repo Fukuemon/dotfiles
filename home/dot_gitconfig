@@ -38,8 +38,9 @@
 	postBuffer = 524288000
 
 [wt]
-	# git-wt が worktree を作る場所（リポジトリの外を汚さない）
-	basedir = .git/wt
+	# git-wt が worktree を作る場所（リポジトリの外を汚さない）。
+	# git-wt が /.wt/ を .git/info/exclude に追記するので untracked には出ない。
+	basedir = .wt
 
 # gh CLI を認証ヘルパーとして使う。
 # 以前はここに mise のインストール先絶対パス
