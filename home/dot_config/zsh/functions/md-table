@@ -1,0 +1,30 @@
+# md-table — クリップボードの TSV を Markdown のテーブルに変換して書き戻す
+#
+# 使い方: スプレッドシート（Excel / Google Sheets / Notion）で範囲をコピーしてから
+#   md-table
+# を実行すると、クリップボードの中身が Markdown のテーブルに置き換わる。
+# 1 行目をヘッダとして扱い、区切り行（|---|---|）を差し込む。
+#
+# autoload される関数。ファイル名がそのまま関数名になる。
+
+emulate -L zsh
+
+pbpaste | awk -F'\t' '
+{
+  printf "| ";
+  for (i = 1; i <= NF; i++) {
+    gsub(/^[ \t]+|[ \t]+$/, "", $i);
+    printf "%s | ", $i;
+  }
+  print "";
+
+  # 1 行目の直後にヘッダ区切りを入れる
+  if (NR == 1) {
+    printf "|";
+    for (i = 1; i <= NF; i++) printf "---|";
+    print "";
+  }
+}
+' | pbcopy
+
+print "クリップボードを Markdown テーブルに変換しました"

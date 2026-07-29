@@ -26,8 +26,17 @@ alias zshconfig='cd "$(chezmoi source-path)" && nvim dot_zshrc'
 # git ブランチを fzf で選択して展開するグローバルエイリアス（例: git switch lb）
 alias -g lb='$(git branch --format="%(refname:short)" | fzf --prompt="branch> ")'
 
+# git / docker の TUI（どちらも mise 管理）
+# 設定は ~/.config/lazygit/config.yml（lazygit は XDG のこのパスを既定で読むので
+# LG_CONFIG_FILE を export する必要はない）
+alias lg="lazygit"
+alias ld="lazydocker"
+
 # docker コンテナを fzf で選んで exec
 alias de='docker exec -it $(docker ps --format "{{.ID}}\t{{.Names}}\t{{.Image}}" | fzf --prompt="container> " | cut -f1) /bin/bash'
+
+# tree: ノイズになるディレクトリを既定で除外する（-N は非 ASCII をエスケープしない）
+alias tree='tree -a -I ".DS_Store|.git|node_modules|vendor/bundle" -N'
 
 # 削除したエイリアス:
 # - cpoke : ~/scripts/hyper/choose_pokemon.sh を呼ぶもので、中身は ~/.hyper.js の

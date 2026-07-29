@@ -6,6 +6,11 @@
 # ルール:
 # - 1 行 1 パッケージ
 # - 空行/先頭 # はコメント扱い
+#
+# 全マシン共通の宣言。sync スクリプトは「宣言にあって入っていないものを add する」
+# だけで、宣言に無いものは STRICT=1 APPLY_REMOVE=1 を付けない限り削除しない。
+# そのため、あるマシンに不要なパッケージが混ざっていても壊れないが、
+# sync を素で流すと宣言分すべてが入る（qemu は nix の closure が大きい）。
 
 neovim
 sheldon
@@ -25,7 +30,16 @@ tmux-mem-cpu-load
 qemu
 pv
 psutils
+poppler
 librsvg
 netpbm
-
-
+shellcheck
+xsel
+reattach-to-user-namespace
+grc
+ffmpeg
+expect
+cpulimit
+btop
+# DB 調査で使う mysql / mysqldump クライアント（サーバは含まない）
+mysql-client

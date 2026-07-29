@@ -2,4 +2,18 @@
 devbox/backups/*
 !devbox/backups/.gitkeep
 
+# --- マシン固有・非公開の設定 -------------------------------------------------
+# このリポジトリは public なので、公開したくない値（識別子・ホスト名・
+# クラウドのリソース名など）を含む設定はコミットしない。
+#
+# chezmoi は git を見ずに source ディレクトリを読むため、ignore していても
+# symlink は張られ、設定として機能する（管理下だが push されない状態）。
+# 共有設定の側には「あれば読む」だけを書き、無くても壊れないようにしてある。
+home/dot_gitconfig.local
+home/dot_config/zsh/90-local.zsh
+home/dot_config/yazi/local.lua
+
+# 端末固有のメモ（棚卸し結果や環境ごとの詰まりどころ）
+docs/local/
+
 

@@ -217,3 +217,36 @@ on-mode-changed = []
     alt-shift-j = ['join-with down', 'mode main']
     alt-shift-k = ['join-with up', 'mode main']
     alt-shift-l = ['join-with right', 'mode main']
+
+[[on-window-detected]]
+    if.app-id = 'com.jetbrains.intellij.ce'
+    run = 'move-node-to-workspace I'
+
+[[on-window-detected]]
+    if.app-id = 'com.microsoft.teams2'
+    run = 'move-node-to-workspace T'
+
+[[on-window-detected]]
+    if.app-id = 'company.thebrowser.Browse'
+    run = 'move-node-to-workspace A'
+
+[[on-window-detected]]
+    if.app-id = 'com.mitchellh.ghostty'
+    run = 'move-node-to-workspace G'
+
+[[on-window-detected]]
+    if.app-id = 'com.todesktop.230313mzl4w4u92'
+    run = 'move-node-to-workspace E'
+
+[[on-window-detected]]
+    if.app-id = 'com.microsoft.Outlook'
+    run = 'move-node-to-workspace O'
+
+[[on-window-detected]]
+    if.app-id = 'md.obsidian'
+    run = 'move-node-to-workspace 1'
+
+
+
+
+
