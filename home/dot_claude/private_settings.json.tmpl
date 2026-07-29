@@ -81,7 +81,7 @@
       {
         "hooks": [
           {
-            "command": "bash '{{ .chezmoi.homeDir }}/.claude/hooks/herdr-agent-state.sh' session",
+            "command": "if [ -f '{{ .chezmoi.homeDir }}/.claude/hooks/herdr-agent-state.sh' ] && [ -r '{{ .chezmoi.homeDir }}/.claude/hooks/herdr-agent-state.sh' ]; then bash '{{ .chezmoi.homeDir }}/.claude/hooks/herdr-agent-state.sh' session; else cat >/dev/null 2>&1 || :; fi",
             "timeout": 10,
             "type": "command"
           }
