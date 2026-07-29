@@ -1,1 +1,70 @@
+# Agent Operating Rules
+
+AI エージェント共通の規約。プロジェクトに依存しない作法だけを置く。
+
+- 個別プロジェクトの規約は、そのリポジトリの `CLAUDE.md` / `AGENTS.md` を正本とし、こちらが競合する場合はプロジェクト側を優先する。
+- このファイルの実体は dotfiles の `home/dot_claude/CLAUDE.md` で、`~/.claude/CLAUDE.md` へ symlink される。同じ本文が Codex 用の `home/dot_codex/AGENTS.md` にもあるので、片方だけ直さない。
+
+## Repository Reference Rules
+
+- リポジトリは [ghq](https://github.com/x-motemen/ghq) で管理している。`ghq root` は `~/src`。
+- パスは必ず `$(ghq root)/<host>/<owner>/<repo>/...` の形式で書く。`~/src/...` や絶対パスを直接書かない。
+- リポジトリを探すときは `ghq list` を使う。ファイルシステムを走査しない。
+
+```sh
+$(ghq root)/
+└── github.com/<owner>/<repo>/
+```
+
+- 同じリポジトリが複数のパスに存在する場合（fork など）は、どちらが正本かを確認してから触る。
+
+## Worktree Rules
+
+- worktree は [git-wt](https://github.com/k1LoW/git-wt) で作る。置き場所は `<repo>/.wt/<branch>`（`~/.gitconfig` の `wt.basedir = .wt`）。
+- `git wt <branch>` で作成と移動を同時に行う。`git worktree add` を直接使うと置き場所の規約から外れる。
+- 削除も `git wt` 経由で行い、`.wt/` を手で消さない。
+- リポジトリ外（`../<repo>-<branch>` など）に worktree を作らない。ghq の配置規約を壊す。
+
+## Tool Usage Guide
+
+- Python のランタイムは `uv` を使う。`pip` / `python -m venv` を直接使わない。
+- 入口の探索は `rg`。構造的な検索は `ast-grep` か serena MCP。
+- 出力の整形は `jq` / `yq` / `sed` / `nl`。
+- CLI を新しく入れるときは、必ず宣言に足してから入れる（`mise` か devbox global）。`go install` / `cargo install` / `npm -g` での野良インストールは作らない。
+- ファイルの読み書き・検索は専用ツールを使い、`cat` / `head` / `sed` でのファイル閲覧に置き換えない。
+
+## Output Format Rules
+
+- ドキュメントを書く前に `styleguide-documents` skill を開く。
+- リポジトリのパスを書くときは `$(ghq root)/<repository-path>/...` の形式にする。
+- コードベースの調査結果は次の形式で書く。
+
+```md
+- {説明}
+    - `{path}:{line-range}` / [github]({github_blob_link})
+```
+
+- GitHub の blob link は `https://github.com/<owner>/<repo>/blob/<ref>/<path>#L<start>-L<end>` の形式。`<ref>` はブランチ名ではなくコミット SHA を使う（ブランチが進むと行がずれる）。
+- コードスパン（`` ` ``）で囲むのはパスと行範囲だけにする。リンクまで囲むと Markdown のリンクとして機能せず、ブラウザで遷移できない。
+- 事実と推測を分けて書く。確認していないことは「未確認」と明示する。
+
+## Skill Usage Rules
+
+- 専門知識や定型手順がある作業では、該当する skill を必ず開く。
+- 使う skill とその理由を 1 行で書く。
+- `SKILL.md` をその skill の正本として扱う。`references/` と `assets/` は、その skill が直接参照する詳細フォーマットやテンプレートだけに使う。
+- skill の内容が実態とずれていたら、その場の判断で回避せず skill 側を直す。
+
+## Sub-agent Rules
+
+- 独立したコンテキストが有利な作業（広い探索、レビュー、分担できる下調べ）では sub-agent を使う。
+- sub-agent には「何を返してほしいか」を明示する。返ってきた内容は鵜呑みにせず、結論に使う部分だけ自分で検証する。
+- 依存関係のない調査は 1 回のメッセージで並列に投げる。
+
+## Change Safety Rules
+
+- 破壊的な操作（削除・上書き・force push・remote への push）は、対象を確認してから実行する。
+- symlink で配布している設定を編集するときは、実体がどのリポジトリにあるかを確認する。`~` 側のパスで開いたつもりでリポジトリを書き換えていることがある。
+- 秘密情報（トークン・認証情報）と、公開してよい値の境界を意識する。public リポジトリに非公開の値を書かない。
+
 @RTK.md
