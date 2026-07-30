@@ -1,0 +1,46 @@
+# lazygit の設定（dotfiles 管理 / chezmoi が ~/.config/lazygit/config.yml に symlink する）
+#
+# lazygit は XDG の既定パス（~/.config/lazygit/config.yml）を自分で読むため、
+# LG_CONFIG_FILE を export する必要はない。
+# 設定項目の一覧: https://github.com/jesseduffield/lazygit/blob/master/docs/Config.md
+#
+# 起動は `lg`（~/.config/zsh/40-aliases.zsh）。本体は mise 管理（aqua:jesseduffield/lazygit）。
+git:
+  autocommit: false
+
+  # diff のページャに delta（mise 管理）を使う。
+  # ★ キーは `paging`（マップ）。以前は `pagers`（リスト）と書いていたが、
+  #   lazygit にそのキーは無いため設定が丸ごと無視され、delta が効いていなかった。
+  paging:
+    colorArg: always
+    pager: delta --paging=never --true-color=auto --dark --side-by-side --line-numbers --syntax-theme=Dracula --width=variable --navigate
+
+gui:
+  # DRACULA
+  theme:
+    activeBorderColor:
+      - "#FF79C6"
+      - bold
+    inactiveBorderColor:
+      - "#BD93F9"
+    searchingActiveBorderColor:
+      - "#8BE9FD"
+      - bold
+    optionsTextColor:
+      - "#6272A4"
+    selectedLineBgColor:
+      - "#6272A4"
+    inactiveViewSelectedLineBgColor:
+      - bold
+    cherryPickedCommitFgColor:
+      - "#6272A4"
+    cherryPickedCommitBgColor:
+      - "#8BE9FD"
+    markedBaseCommitFgColor:
+      - "#8BE9FD"
+    markedBaseCommitBgColor:
+      - "#F1FA8C"
+    unstagedChangesColor:
+      - "#FF5555"
+    defaultFgColor:
+      - "#F8F8F2"

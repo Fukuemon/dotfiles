@@ -27,3 +27,28 @@ mouse-hide-while-typing = true
 # 選択したテキストも背景画像に埋もれないよう、明示的に色を付ける
 selection-background = 3e4451
 selection-foreground = ffffff
+
+# --- ウィンドウ ---
+# タイトルバーを隠して padding も詰める（zellij / nvim の表示領域を稼ぐため）。
+# window-decoration = false にすると OS のフレームごと消える。
+macos-titlebar-style = hidden
+window-decoration = false
+window-padding-x = 2
+window-padding-y = 2
+font-size = 12
+
+# 背景の透過。背景画像（上の background-image）とは別に、
+# ウィンドウ全体を薄く透かして後ろのウィンドウを見えるようにする。
+background-opacity = 0.9
+background-blur-radius = 20
+
+# 終了時のタブ/分割の状態を復元する
+window-save-state = always
+
+# 左 option を Alt として扱う（右 option は macOS の記号入力のまま残す）。
+# zsh の Alt-C / Alt-. などのキーバインドを効かせるために必要。
+macos-option-as-alt = left
+
+# OSC 9 / OSC 777 による通知を macOS の通知センターに出す
+# （Claude Code / Codex の完了通知がターミナル経由で飛んでくる）
+desktop-notifications = true

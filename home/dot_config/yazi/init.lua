@@ -40,12 +40,25 @@ end
 -- `e` でメニューを開く（keymap 側で `plugin bunny`）
 do
   local ok, bunny = pcall(require, "bunny")
+
+  local hops = {
+    { key = "f", path = "~/src/github.com/Fukuemon", desc = "Fukuemon" },
+    { key = "c", path = "~/.config", desc = "Config files" },
+  }
+
+  -- マシン固有の hop は ~/.config/yazi/local.lua に置く（hops のテーブルを return する）。
+  -- 公開したくないパスをこのリポジトリに載せないための逃げ道。
+  -- ファイルが無ければ何もしない。
+  local local_ok, extra = pcall(dofile, (os.getenv("HOME") or "") .. "/.config/yazi/local.lua")
+  if local_ok and type(extra) == "table" then
+    for _, hop in ipairs(extra) do
+      table.insert(hops, hop)
+    end
+  end
+
   if ok and bunny and type(bunny.setup) == "function" then
     bunny:setup {
-      hops = {
-        { key = "f", path = "~/src/github.com/Fukuemon", desc = "Fukuemon" },
-        { key = "c", path = "~/.config", desc = "Config files" },
-      },
+      hops = hops,
       desc_strategy = "path",
       ephemeral = true,
       tabs = true,

@@ -1,0 +1,14 @@
+# git のグローバル除外設定（core.excludesfile = ~/.gitignore）
+#
+# どのリポジトリでも無視したいものだけを書く。プロジェクト固有のものは
+# そのリポジトリの .gitignore に書くこと。
+
+# エージェント/ツールがローカルに作る作業ディレクトリ
+private/
+.serena/
+
+# Claude Code のマシン固有の許可設定（共有してはいけない）
+**/.claude/settings.local.json
+
+# macOS
+.DS_Store

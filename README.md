@@ -38,7 +38,8 @@ home/                           chezmoi の管理対象。~ に配置される�
 ├── dot_zshrc                   → ~/.zshrc
 ├── dot_zprofile                → ~/.zprofile
 ├── dot_p10k.zsh                → ~/.p10k.zsh
-├── dot_gitconfig               → ~/.gitconfig
+├── dot_gitconfig               → ~/.gitconfig（末尾で ~/.gitconfig.local を include）
+├── dot_gitignore               → ~/.gitignore（core.excludesfile）
 ├── dot_aerospace.toml          → ~/.aerospace.toml
 ├── dot_claude/                 → ~/.claude/（CLAUDE.md / RTK.md / settings.json）
 ├── dot_codex/                  → ~/.codex/（AGENTS.md / RTK.md / hooks.json）
@@ -50,6 +51,7 @@ home/                           chezmoi の管理対象。~ に配置される�
     ├── atuin/config.toml         履歴検索
     ├── nvim/                     LazyVim
     ├── yazi/                     ファイルマネージャ
+    ├── lazygit/config.yml        git の TUI（delta をページャに使う）
     ├── ghostty/                  ターミナル
     └── zellij/                   マルチプレクサ
 
@@ -61,6 +63,20 @@ setup.sh                        ブートストラップ
 ```
 
 `home/` の外にあるもの（`docs/` `scripts/` `setup.sh` `README.md`）は `.chezmoiroot` によって chezmoi の管理対象から外れる。
+
+### マシンごとに違う設定
+
+このリポジトリは public なので、公開したくない値（identity・ホスト名・クラウドのリソース名など）はコミットしない。マシン固有の設定は `.gitignore` したローカルファイルに閉じ込め、共有設定の側には「あれば読む」だけを書く。
+
+| ローカルファイル（gitignore）      | 配置先                       | 読まれ方                                        |
+| ---------------------------------- | ---------------------------- | ----------------------------------------------- |
+| `home/dot_gitconfig.local`         | `~/.gitconfig.local`         | `~/.gitconfig` 末尾の `[include]`（最後 = 上書き可） |
+| `home/dot_config/zsh/90-local.zsh` | `~/.config/zsh/90-local.zsh` | `.zshrc` が番号順に source する（90 番 = 最後）  |
+| `home/dot_config/yazi/local.lua`   | `~/.config/yazi/local.lua`   | `init.lua` が `dofile` で読み hops に追記する     |
+
+`.gitignore` されたファイルにも chezmoi は symlink を張る（chezmoi は git を見ない）。**管理下に置きながら push はされない**。どれも無くても壊れない（git は無い include を無視し、zsh の glob は `(N-.)`、yazi は `pcall`）。
+
+端末固有のメモは `docs/local/`（gitignore）に置く。
 
 ## 日常運用
 
@@ -167,6 +183,7 @@ zellij のサーバはデーモンとして動くため、ペイン内のシェ�
 | `20-completion.zsh`  | fzf-tab の `zstyle`                   |
 | `30-keybindings.zsh` | ZLE への登録とキー割り当て            |
 | `40-aliases.zsh`     | エイリアス                            |
+| `90-local.zsh`       | マシン固有（`.gitignore`。無くてもよい） |
 
 `scripts/` ではなくここに置くのは、`scripts/` が `home/` の外にあり `~` へ配置されないため。`.zshrc` から安定したパスで読むには `~/.config/zsh/` に配る必要がある。
 
@@ -179,6 +196,7 @@ zellij のサーバはデーモンとして動くため、ペイン内のシェ�
 | `ghq-new`         | GitHub にリポジトリを作成し、ghq で取得して cd する  |
 | `fzf-src`         | ghq のリポジトリへ移動する（ZLE ウィジェット）       |
 | `fzf-cdr`         | 最近使ったディレクトリへ移動する（ZLE ウィジェット） |
+| `md-table`        | クリップボードの TSV を Markdown テーブルに変換する   |
 | `zsh-cache-clear` | 初期化キャッシュを捨てて zsh を入れ直す              |
 
 このディレクトリは `fpath` に入っており、`05-autoload.zsh` が `autoload -Uz` する。**関数を追加するときはファイルを 1 つ置くだけでよい**（`.zshrc` も loader も編集不要）。autoload なので呼ばれるまで読み込まれず、関数を増やしても起動時間は変わらない。

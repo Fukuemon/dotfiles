@@ -40,7 +40,18 @@
 "aqua:jesseduffield/lazydocker" = "latest"
 "aqua:go-task/task" = "latest"
 "aqua:evilmartians/lefthook" = "latest"
+"aqua:uutils/coreutils" = "latest"
 opencode = "latest"
+
+# --- TUI ビューア / データ ---
+"aqua:ynqa/jnv" = "latest"                             # jq を対話的に書ける JSON ビューア
+"aqua:tstack/lnav" = "latest"                          # ログビューア（アプリログの調査に使う）
+"go:github.com/jorgerojas26/lazysql" = "latest"        # MySQL/PostgreSQL の TUI クライアント
+"aqua:mrjackwills/oxker" = "latest"                    # docker コンテナの TUI モニタ
+
+# --- ホスティング CLI ---
+# gh（GitHub）は上の aqua:cli/cli。GitLab 上のリポジトリは glab で操作する。
+glab = "latest"
 
 # --- AI エージェント補助 ---
 # rtk（Rust Token Killer）: bash 出力を圧縮してエージェントの token 消費を削る CLI プロキシ。
@@ -72,3 +83,22 @@ go = "1.26.4"
 "aqua:hashicorp/terraform" = "latest"
 "aqua:terraform-docs/terraform-docs" = "latest"
 "aqua:aquasecurity/tfsec" = "latest"
+"aqua:terraform-linters/tflint" = "latest"
+"aqua:getsops/sops" = "latest"    # SOPS: 暗号化した設定ファイルの編集
+"aqua:FiloSottile/age" = "latest" # sops のバックエンドに使う暗号化ツール
+
+# --- Kubernetes ---
+"aqua:helm/helm" = "latest"
+"aqua:helmfile/helmfile" = "latest"
+"aqua:derailed/k9s" = "latest"
+"aqua:kubernetes/minikube" = "latest"
+
+# --- その他 ---
+"aqua:golangci/golangci-lint" = "latest"
+"aqua:marp-team/marp-cli" = "latest" # Markdown → スライド
+"aqua:linebender/resvg" = "latest"   # SVG → PNG（yazi のプレビューにも使う）
+
+# 削除したもの（旧 mise/config.toml から引き継がなかった宣言）:
+# - aqua:neovim/neovim … devbox global 側（nix）で管理しているため二重になる
+# - aqua:peco/peco     … fzf / atuin に一本化（上の「シェル体験」を参照）
+# - aqua:tfutils/tfenv … terraform 自体を mise が管理しており shim が二重になる

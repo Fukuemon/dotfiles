@@ -4,6 +4,8 @@
 
 [core]
 	autocrlf = input
+	editor = nvim
+	excludesfile = ~/.gitignore
 	# delta: シンタックスハイライト付きの diff ページャ（mise 管理）
 	pager = delta
 
@@ -35,6 +37,11 @@
 [http]
 	postBuffer = 524288000
 
+[wt]
+	# git-wt が worktree を作る場所（リポジトリの外を汚さない）。
+	# git-wt が /.wt/ を .git/info/exclude に追記するので untracked には出ない。
+	basedir = .wt
+
 # gh CLI を認証ヘルパーとして使う。
 # 以前はここに mise のインストール先絶対パス
 #   !/Users/.../mise/installs/aqua-cli-cli/2.83.2/gh_2.83.2_macOS_arm64/bin/gh
@@ -47,5 +54,10 @@
 [credential "https://gist.github.com"]
 	helper =
 	helper = !gh auth git-credential
-[wt]
-	basedir = .git/wt
+
+# --- マシン固有の上書き -------------------------------------------------------
+# 最後に読むので、上のすべてを上書きできる（identity / 認証ヘルパーなど）。
+# ファイルが無ければ git は黙って無視するため、置いていないマシンでも壊れない。
+# 中身をこのリポジトリに置かないのは、公開したくない値を含むため。
+[include]
+	path = ~/.gitconfig.local
