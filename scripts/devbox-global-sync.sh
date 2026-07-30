@@ -11,11 +11,16 @@
 #
 # NOTE:
 # - devbox の内部状態ファイルを直接管理せず、「宣言ファイル→devbox global add」で寄せる方針です。
+# - 宣言は全マシン共通です。特定のマシンだけ入れたくないものは
+#   devbox/global-packages.local-exclude.txt（.gitignore 済み）に 1 行 1 パッケージで書きます。
+#   除外したものは add されず、STRICT の宣言外判定では削除候補として出ます
+#   （実際に消えるのは APPLY_REMOVE=1 を付けたときだけ）。
 
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MANIFEST="${DOTFILES_DIR}/devbox/global-packages.txt"
+EXCLUDE_MANIFEST="${DOTFILES_DIR}/devbox/global-packages.local-exclude.txt"
 BACKUP_DIR="${DOTFILES_DIR}/devbox/backups"
 
 now_ts() {
@@ -44,13 +49,33 @@ backup_devbox_global_list() {
   echo "バックアップを保存しました: ${outfile}"
 }
 
-read_manifest_packages() {
-  # stdout に 1 行 1 パッケージで出力（bash 3.2 互換のため mapfile は使わない）
+read_package_lines() {
+  # 指定ファイルから 1 行 1 パッケージで出力（bash 3.2 互換のため mapfile は使わない）
+  local file="$1"
+  [ -f "${file}" ] || return 0
   while IFS= read -r line; do
     [[ -z "${line}" ]] && continue
     [[ "${line}" =~ ^[[:space:]]*# ]] && continue
     printf "%s\n" "${line}"
-  done < "${MANIFEST}"
+  done < "${file}"
+}
+
+is_excluded() {
+  local pkg="$1"
+  local ex
+  for ex in ${EXCLUDED_PACKAGES[@]+"${EXCLUDED_PACKAGES[@]}"}; do
+    [ "${pkg}" = "${ex}" ] && return 0
+  done
+  return 1
+}
+
+read_manifest_packages() {
+  # 共通の宣言から、このマシンのローカル除外分を落として出力する
+  local pkg
+  while IFS= read -r pkg; do
+    is_excluded "${pkg}" && continue
+    printf "%s\n" "${pkg}"
+  done < <(read_package_lines "${MANIFEST}")
 }
 
 installed_global_packages() {
@@ -83,6 +108,18 @@ require_or_dryrun_devbox
 if [ ! -f "${MANIFEST}" ]; then
   echo "manifest が見つかりません: ${MANIFEST}" >&2
   exit 1
+fi
+
+# このマシンだけ入れたくないパッケージ（ファイルが無ければ空）
+EXCLUDED_PACKAGES=()
+while IFS= read -r pkg; do
+  EXCLUDED_PACKAGES+=("${pkg}")
+done < <(read_package_lines "${EXCLUDE_MANIFEST}")
+
+if [ "${#EXCLUDED_PACKAGES[@]}" -gt 0 ]; then
+  echo "ローカル除外（${EXCLUDE_MANIFEST}）により add しません:"
+  printf -- "- %s\n" "${EXCLUDED_PACKAGES[@]}"
+  echo ""
 fi
 
 packages=()

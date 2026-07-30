@@ -13,6 +13,9 @@ home/dot_gitconfig.local
 home/dot_config/zsh/90-local.zsh
 home/dot_config/yazi/local.lua
 
+# このマシンでは devbox global に入れたくないパッケージ（宣言は全マシン共通のため）
+devbox/global-packages.local-exclude.txt
+
 # 端末固有のメモ（棚卸し結果や環境ごとの詰まりどころ）
 docs/local/
 

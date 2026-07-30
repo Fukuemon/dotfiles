@@ -55,8 +55,8 @@ home/                           chezmoi の管理対象。~ に配置される�
     ├── ghostty/                  ターミナル
     └── zellij/                   マルチプレクサ
 
-devbox/global-packages.txt      devbox global の宣言（唯一の真実）
-scripts/devbox-global-sync.sh   上記を devbox に反映する
+devbox/global-packages.txt      devbox global の宣言（唯一の真実。全マシン共通）
+scripts/devbox-global-sync.sh   上記を devbox に反映する（ローカル除外あり。後述）
 scripts/ai-config-sync.sh       AI CLI の設定を ~ から取り込み直す
 docs/                           ADR と運用メモ
 setup.sh                        ブートストラップ
@@ -73,6 +73,7 @@ setup.sh                        ブートストラップ
 | `home/dot_gitconfig.local`         | `~/.gitconfig.local`         | `~/.gitconfig` 末尾の `[include]`（最後 = 上書き可） |
 | `home/dot_config/zsh/90-local.zsh` | `~/.config/zsh/90-local.zsh` | `.zshrc` が番号順に source する（90 番 = 最後）  |
 | `home/dot_config/yazi/local.lua`   | `~/.config/yazi/local.lua`   | `init.lua` が `dofile` で読み hops に追記する     |
+| `devbox/global-packages.local-exclude.txt` | （配置しない）       | `devbox-global-sync.sh` が読み、書いたパッケージを add 対象から外す |
 
 `.gitignore` されたファイルにも chezmoi は symlink を張る（chezmoi は git を見ない）。**管理下に置きながら push はされない**。どれも無くても壊れない（git は無い include を無視し、zsh の glob は `(N-.)`、yazi は `pcall`）。
 
