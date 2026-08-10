@@ -120,8 +120,31 @@ chezmoi diff                       # 空になるのが正常
 | `~/.claude/CLAUDE.md`・`RTK.md`                 | `~/.codex/config.toml` — `projects.<絶対パス>` の信頼リスト＝マシン状態 |
 | `~/.codex/AGENTS.md`・`RTK.md`・`hooks.json`    | `projects/` `sessions/` `history.jsonl` — セッション履歴                |
 | `~/.cursor/hooks.json`・`mcp.json`              | `plugins/` `extensions/` — ツールが管理する実体（サイズも大きい）       |
+| —                                               | `~/.claude/skills/`・`~/.agents/skills/` — `skills` CLI が管理（下記） |
 
 新しいマシンでは `mise install` で `rtk` が入り、`chezmoi apply` で上記の設定が配置される。RTK の hook は設定ごと配られるので `rtk init` の再実行は不要（作り直したいときだけ `rtk init -g` / `--codex` / `--agent cursor`）。
+
+#### skill
+
+skill 本体は chezmoi で配らず、`skills` CLI で入れる。上流リポジトリの更新を追う対象であり、実体を抱えると追従が自分の仕事になるため。
+
+`CLAUDE.md` / `AGENTS.md` の Output Format Rules は `genshijin` を前提にしているので、新しいマシンでは次を実行する。
+
+```bash
+npx skills add InterfaceX-co-jp/genshijin --skill genshijin -a claude-code -a codex -g -y
+npx skills add InterfaceX-co-jp/genshijin -l   # 派生 skill の一覧を見る（install はしない）
+```
+
+> **注意**: 上流の `SKILL.md` と規約は一部食い違う。`CLAUDE.md` 側が優先で、次を無効化している。
+>
+> - 「境界」節 — 上流は「チャット外に残る文章は通常記述」とするが、規約はファイルに残る文章にも適用する。
+> - 「テキスト形式ファイル生成」節 — 上流は `.md` 等の生成時に口調を確認するが、規約は確認しない。
+> - デフォルトレベル「通常」— 規約は丁寧に固定する。
+> - 削除対象の「マークダウンテーブル」— 規約は比較や条件整理で表を使う。
+>
+> `skills update` で上流を更新しても、この優先順位は変わらない。規約側だけを正本として扱う。
+
+`styleguide-documents` も規約が参照しているが、こちらは業務側のリポジトリで管理している。入っていないマシンでは、規約に書いた内容だけで判断する。
 
 > **注意**: `chezmoi apply` は既存ファイルを**バックアップせず上書きする**（別 destination で実測）。`.bak` を作るのは `rtk init` だけで、chezmoi は退避を残さない。すでに Claude Code / Cursor を使っていて独自の設定があるマシンで初めて適用するときは、先に差分を確認する。
 >
