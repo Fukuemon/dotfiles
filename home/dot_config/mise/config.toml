@@ -87,6 +87,7 @@ go = "1.26.4"
 "aqua:terraform-docs/terraform-docs" = "latest"
 "aqua:aquasecurity/tfsec" = "latest"
 "aqua:terraform-linters/tflint" = "latest"
+"aqua:cloudflare/cf-terraforming" = "latest" # Cloudflare の既存リソースを Terraform へ import する
 "aqua:getsops/sops" = "latest"    # SOPS: 暗号化した設定ファイルの編集
 "aqua:FiloSottile/age" = "latest" # sops のバックエンドに使う暗号化ツール
 
@@ -100,6 +101,7 @@ go = "1.26.4"
 "aqua:golangci/golangci-lint" = "latest"
 "aqua:marp-team/marp-cli" = "latest" # Markdown → スライド
 "aqua:linebender/resvg" = "latest"   # SVG → PNG（yazi のプレビューにも使う）
+"pipx:apm-cli" = "0.32.0"
 
 # 削除したもの（旧 mise/config.toml から引き継がなかった宣言）:
 # - aqua:neovim/neovim … devbox global 側（nix）で管理しているため二重になる
