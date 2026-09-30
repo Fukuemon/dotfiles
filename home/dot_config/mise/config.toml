@@ -23,6 +23,10 @@
 "aqua:sharkdp/fd" = "latest"       # find 代替（fzf のデフォルト検索に使用）
 "aqua:sharkdp/bat" = "latest"      # cat 代替（fzf のプレビューにも使用）
 "aqua:dandavison/delta" = "latest" # git diff のページャ
+# worktrunk: `wt switch <branch>` で worktree を作って cd する。.zshrc が eval している。
+# aqua レジストリに無いため github バックエンド（GitHub Releases のビルド済みバイナリ）を使う。
+# tar 内の実行ファイル名が wt でリポジトリ名と違うため exe を明示する（無いと解決に失敗する）。
+"github:max-sixty/worktrunk" = { version = "latest", exe = "wt" }
 
 # --- ターミナルマルチプレクサ ---
 # これまで cargo install で入れたものが ~/.cargo/bin にあり、どこにも宣言されて
@@ -63,7 +67,6 @@ glab = "latest"
 # もともと `go install` で ~/go/bin に入れていたもの。どこにも宣言が無く新しいマシンで
 # 再現できなかったため mise に移した。aqua（プレビルド配布）にあるものは aqua を使い、
 # 無いものだけ go バックエンド（ソースビルド）にしている。
-"go:github.com/k1LoW/git-wt" = "latest"           # git worktree 切り替え。.zshrc が eval している
 "aqua:swaggo/swag" = "latest"                     # Swagger ドキュメント生成
 "go:github.com/go-delve/delve/cmd/dlv" = "latest" # Go デバッガ（aqua 側の実体も go_install なので go バックエンド）
 "go:golang.org/x/tools/gopls" = "latest"          # Go LSP
@@ -102,3 +105,4 @@ go = "1.26.4"
 # - aqua:neovim/neovim … devbox global 側（nix）で管理しているため二重になる
 # - aqua:peco/peco     … fzf / atuin に一本化（上の「シェル体験」を参照）
 # - aqua:tfutils/tfenv … terraform 自体を mise が管理しており shim が二重になる
+# - go:github.com/k1LoW/git-wt … worktrunk に移行（上の「シェル体験」を参照）

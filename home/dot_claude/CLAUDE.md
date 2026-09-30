@@ -20,10 +20,10 @@ $(ghq root)/
 
 ## Worktree Rules
 
-- worktree は [git-wt](https://github.com/k1LoW/git-wt) で作る。置き場所は `<repo>/.wt/<branch>`（`~/.gitconfig` の `wt.basedir = .wt`）。
-- `git wt <branch>` で作成と移動を同時に行う。`git worktree add` を直接使うと置き場所の規約から外れる。
-- 削除も `git wt` 経由で行い、`.wt/` を手で消さない。
-- リポジトリ外（`../<repo>-<branch>` など）に worktree を作らない。ghq の配置規約を壊す。
+- worktree は [worktrunk](https://github.com/max-sixty/worktrunk) で作る。置き場所は `<repo>/.wt/<branch>`（`~/.config/worktrunk/config.toml` の `worktree-path`）。
+- 新規作成は `wt switch --create <branch>`、既存への移動は `wt switch <branch>`。どちらも作成・移動と cd を同時に行う。`git worktree add` を直接使うと置き場所の規約から外れる。
+- 一覧は `wt list`。削除は `wt remove` で行い、`.wt/` を手で消さない。
+- リポジトリ外（`../<repo>.<branch>` など）に worktree を作らない。ghq の配置規約を壊す。worktrunk のデフォルトはリポジトリの兄弟に作る設定なので、リポジトリ外に出たときは `worktree-path` が効いているかを疑う。
 
 ## Tool Usage Guide
 

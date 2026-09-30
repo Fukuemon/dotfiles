@@ -52,6 +52,7 @@ home/                           chezmoi の管理対象。~ に配置される�
     ├── nvim/                     LazyVim
     ├── yazi/                     ファイルマネージャ
     ├── lazygit/config.yml        git の TUI（delta をページャに使う）
+    ├── worktrunk/config.toml     git worktree の置き場所（<repo>/.wt/<branch>）
     ├── ghostty/                  ターミナル
     └── zellij/                   マルチプレクサ
 
@@ -249,7 +250,7 @@ ZLE ウィジェットにするものだけ、`30-keybindings.zsh` で `zle -N` 
 | `Ctrl-U`           | 最近使ったディレクトリ（cdr）へ移動する                                 |
 | `Ctrl-T` / `Alt-C` | fzf でファイル / ディレクトリを選ぶ                                     |
 | `z <部分名>`       | zoxide — よく使うディレクトリへジャンプする（`zi` で対話選択）          |
-| `git wt <branch>`  | git-wt — worktree を切り替えて cd する                                  |
+| `wt switch <名前>` | worktrunk — worktree を切り替えて cd する（`-c` で作成）                |
 
 ### 起動時間
 

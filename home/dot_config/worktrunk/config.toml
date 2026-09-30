@@ -1,0 +1,25 @@
+# worktrunk のユーザー設定（dotfiles 管理）
+#
+# 運用:
+# - chezmoi が `~/.config/worktrunk/config.toml` に配置する（`chezmoi apply`）
+# - 導入は mise（`github:max-sixty/worktrunk`）。シェル統合は .zshrc が eval する
+# - 設定の確認: `wt config show`
+#
+# 移行メモ:
+# - git-wt から移行した。git-wt の `wt.basedir = .wt`（~/.gitconfig）に相当するのが
+#   下の worktree-path で、置き場所は `<repo>/.wt/<branch>` のまま変えていない。
+
+# worktree の置き場所。
+#
+# worktrunk のデフォルトはリポジトリの兄弟（`<repo>.<branch>`）だが、リポジトリは ghq
+# 管理下（`$(ghq root)/<host>/<owner>/<repo>`）にあるため、兄弟に置くと ghq list に
+# worktree が混ざる。リポジトリ内に閉じ込めて ghq の配置規約を保つ。
+#
+# `.wt/` は ~/.gitignore（core.excludesfile）で全リポジトリ無視しているので、
+# 親リポジトリの untracked には出ない。
+worktree-path = "{{ repo_path }}/.wt/{{ branch | sanitize }}"
+
+# `wt list --json` の出力スキーマ。将来のリリースでデフォルトが 2 に変わる予定のため、
+# 警告を出さずに現時点で明示的に固定する（`wt config show` の migration 提案に従った）。
+[list]
+json-schema = 2

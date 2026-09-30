@@ -7,6 +7,10 @@
 private/
 .serena/
 
+# worktrunk が作る worktree の置き場所（~/.config/worktrunk/config.toml の worktree-path）。
+# リポジトリ内に置くため、親リポジトリの untracked に出ないよう全リポジトリで無視する。
+.wt/
+
 # Claude Code のマシン固有の許可設定（共有してはいけない）
 **/.claude/settings.local.json
 

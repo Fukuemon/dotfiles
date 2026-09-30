@@ -231,10 +231,11 @@ if (( $+commands[atuin] )); then
   _zcache atuin "${commands[atuin]}" atuin init zsh --disable-up-arrow
 fi
 
-# --- git-wt: `git wt <branch>` で worktree を切り替えて cd する ---
-#     git を薄くラップするシェル関数を定義するだけの純粋な出力なのでキャッシュしてよい。
-if (( $+commands[git-wt] )); then
-  _zcache git-wt "${commands[git-wt]}" git-wt --init zsh
+# --- worktrunk: `wt switch <branch>` で worktree を作って cd する ---
+#     ★ compinit（5 章）より後に init すること。補完の登録が compinit を前提にする。
+#     wt 関数と補完を定義するだけの純粋な出力なのでキャッシュしてよい。
+if (( $+commands[wt] )); then
+  _zcache worktrunk "${commands[wt]}" wt config shell init zsh
 fi
 
 # uv の補完（生成に 41ms かかるためキャッシュ）

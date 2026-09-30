@@ -187,7 +187,7 @@ GUI アプリなので方針どおり brew（cask）で管理します。
 
 | ツール | 移行先 |
 |---|---|
-| `git-wt` | `go:github.com/k1LoW/git-wt` |
+| `git-wt` | `go:github.com/k1LoW/git-wt`（後日 worktrunk に移行し、宣言は `github:max-sixty/worktrunk` に置き換えた） |
 | `dlv` | `go:github.com/go-delve/delve/cmd/dlv` |
 | `gopls` | `go:golang.org/x/tools/gopls` |
 | `staticcheck` | `go:honnef.co/go/tools/cmd/staticcheck` |
