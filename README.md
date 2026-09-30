@@ -277,10 +277,33 @@ zellij のペインは長命な zsh プロセスで、起動時に一度だけ `
 
 詳細は [yazi の README](home/dot_config/yazi/README.md)。
 
+### nvim
+
+LazyVim ベース。設定は `home/dot_config/nvim/lua/` にあり、chezmoi が `~/.config/nvim` へ symlink する。
+
+LazyVim の extras（言語ごとの LSP など）は本来 `:LazyExtras` で有効化するが、その状態は `lazyvim.json` に書かれ dotfiles の管理外になる。そのため extras は `lua/plugins/` の中で `{ import = "lazyvim.plugins.extras...." }` として宣言している。
+
+| ファイル                    |                                                                            |
+| --------------------------- | -------------------------------------------------------------------------- |
+| `lua/plugins/lang.lua`      | 言語ごとの LSP / formatter / linter（Go, TS, Python, Terraform, Docker, …） |
+| `lua/plugins/lsp.lua`       | LSP 全体の振る舞い（inlay hints / codelens / 診断表示）                     |
+| `lua/plugins/editor.lua`    | 編集強化（inc-rename, dial, mini-surround, illuminate, …）                 |
+| `lua/plugins/test-dap.lua`  | neotest / nvim-dap                                                          |
+
+Neovim 本体は devbox global（`neovim@latest`）で管理する。更新は次の 2 つをセットで実行する（`update` はロックを書き換えるだけで、profile の symlink は `install` で張り替わる）。
+
+```sh
+devbox global update neovim
+devbox global install
+```
+
+`editor.refactoring`（refactoring.nvim）は Neovim 0.12 以上が必要。
+
+LSP 本体と CLI は mason が `~/.local/share/nvim/mason/` に入れる（初回は各ファイルタイプを開いたときに自動インストール）。ただし mise で宣言済みのものは二重管理を避ける（例: `gopls` は `mason = false`）。
+
 ### その他
 
 - **ghostty** — ターミナルエミュレータ
-- **nvim** — LazyVim ベース
 - **aerospace** — タイル型ウィンドウマネージャ
 
 ## ドキュメント
