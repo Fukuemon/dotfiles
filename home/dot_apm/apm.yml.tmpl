@@ -1,0 +1,8 @@
+name: home
+version: 1.0.0
+description: user scope の構成。中身は agent-harness の packages/global が持つ
+targets: [claude, codex]
+dependencies:
+  apm:
+    - {{ .chezmoi.homeDir }}/src/github.com/Fukuemon/agent-harness/packages/global
+  mcp: []

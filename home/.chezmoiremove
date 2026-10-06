@@ -6,3 +6,8 @@
 # 関数を 1 関数 1 ファイル（~/.config/zsh/functions/）に分離した際の残骸。
 # conda の遅延スタブもここにあったが、env を全削除したので不要になった。
 .config/zsh/50-functions.zsh
+
+# 規約を agent-harness のパッケージ global へ移した際の残骸。
+# ~/.codex/AGENTS.md は apm compile -g が書き出すので、ここには書かない（毎回の apply で消してしまう）。
+.claude/RTK.md
+.codex/RTK.md

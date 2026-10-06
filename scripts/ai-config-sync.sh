@@ -22,15 +22,12 @@ SOURCE_DIR="${DOTFILES_DIR}/home"
 # 実体をそのまま取り込むもの（マシン固有のパスを含まない）
 PLAIN_FILES=(
   "${HOME}/.claude/CLAUDE.md"
-  "${HOME}/.claude/RTK.md"
-  "${HOME}/.codex/RTK.md"
   "${HOME}/.cursor/mcp.json"
 )
 
 # $HOME を含むためテンプレート化して取り込むもの
 TEMPLATE_FILES=(
   "${HOME}/.claude/settings.json"
-  "${HOME}/.codex/AGENTS.md"
   "${HOME}/.codex/hooks.json"
   "${HOME}/.cursor/hooks.json"
 )
@@ -38,7 +35,6 @@ TEMPLATE_FILES=(
 # 取り込み後に $HOME を書き戻す対象（chezmoi のソースパス）
 TEMPLATE_SOURCES=(
   "${SOURCE_DIR}/dot_claude/private_settings.json.tmpl"
-  "${SOURCE_DIR}/dot_codex/private_AGENTS.md.tmpl"
   "${SOURCE_DIR}/dot_codex/hooks.json.tmpl"
   "${SOURCE_DIR}/dot_cursor/private_hooks.json.tmpl"
 )
