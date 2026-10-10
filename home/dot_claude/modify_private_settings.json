@@ -1,0 +1,26 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- /*
+  ~/.claude/settings.json のうち、ここに書いたキーだけを書き換える。
+  hooks、statusLine、permissions.allow は書かない。Orca、rtk、herdr と Claude Code が書き込むため
+*/ -}}
+{{- $s := dict -}}
+{{- if .chezmoi.stdin | trim -}}
+{{-   $s = .chezmoi.stdin | fromJson -}}
+{{- end -}}
+{{- $s = setValueAtPath "agentPushNotifEnabled" true $s -}}
+{{- $s = setValueAtPath "alwaysThinkingEnabled" true $s -}}
+{{- $s = setValueAtPath "effortLevel" "medium" $s -}}
+{{- $s = setValueAtPath "env.BASH_DEFAULT_TIMEOUT_MS" "1800000" $s -}}
+{{- $s = setValueAtPath "env.BASH_MAX_TIMEOUT_MS" "7200000" $s -}}
+{{- $s = setValueAtPath "env.MCP_TIMEOUT" "60000" $s -}}
+{{- $s = setValueAtPath "env.MCP_TOOL_TIMEOUT" "300000" $s -}}
+{{- $s = setValueAtPath "model" "opus[1m]" $s -}}
+{{- $s = setValueAtPath "outputStyle" "plain-ja" $s -}}
+{{- $s = setValueAtPath "permissions.additionalDirectories" (list "/tmp" "/private/tmp") $s -}}
+{{- $s = setValueAtPath "remoteControlAtStartup" true $s -}}
+{{- $s = setValueAtPath "skipDangerousModePermissionPrompt" true $s -}}
+{{- $s = setValueAtPath "switchModelsOnFlag" true $s -}}
+{{- $s = setValueAtPath "theme" "dark-daltonized" $s -}}
+{{- $s = setValueAtPath "enabledPlugins.gopls-lsp@claude-plugins-official" true $s -}}
+{{- $s = setValueAtPath "tui" "fullscreen" $s -}}
+{{- $s | toPrettyJson }}

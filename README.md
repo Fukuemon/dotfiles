@@ -42,9 +42,8 @@ home/                           chezmoi の管理対象。~ に配置される�
 ├── dot_gitignore               → ~/.gitignore（core.excludesfile）
 ├── dot_aerospace.toml          → ~/.aerospace.toml
 ├── dot_apm/                    → ~/.apm/（apm.yml）
-├── dot_claude/                 → ~/.claude/（CLAUDE.md / settings.json / output-styles）
-├── dot_codex/                  → ~/.codex/（hooks.json）
-├── dot_cursor/                 → ~/.cursor/（hooks.json / mcp.json）
+├── dot_claude/                 → ~/.claude/（CLAUDE.md / settings.json の宣言したキー / output-styles）
+├── dot_cursor/                 → ~/.cursor/（mcp.json）
 └── dot_config/                 → ~/.config/
     ├── zsh/                      .zshrc から切り出した設定と自作関数
     ├── sheldon/plugins.toml      zsh プラグイン
@@ -109,22 +108,27 @@ chezmoi managed       # 管理対象を一覧する
 
 ### AI CLI の設定（Claude Code / Codex CLI / Cursor）
 
-symlink ではなく **`~` の実体を取り込み直す**運用。設定は CLI 自身やツール（`rtk init` / plugin 導入 / `/config`）が書き換えるため、リポジトリを編集しても上書きされる前提で扱う。
+設定は CLI 自身やツール（Orca / `rtk init` / plugin 導入 / `/config`）も書き換える。ツールが書く値は宣言せず、ツールに任せる。
+
+- `~/.claude/settings.json` は、[modify_private_settings.json](home/dot_claude/modify_private_settings.json) に書いたキーだけを書き換える。`hooks`、`statusLine`、`permissions.allow` は宣言しない。キーを変えるときは、このファイルを直接編集する。
+- `~/.claude/CLAUDE.md` と `~/.cursor/mcp.json` は、symlink ではなく **`~` の実体を取り込み直す**。
 
 ```bash
-bash ./scripts/ai-config-sync.sh   # ~ の設定を取り込み直す（$HOME はテンプレート化される）
+bash ./scripts/ai-config-sync.sh   # CLAUDE.md と mcp.json を取り込み直す
 chezmoi diff                       # 空になるのが正常
 ```
 
 | 管理する                                        | 管理しない（理由）                                                      |
 | ----------------------------------------------- | ----------------------------------------------------------------------- |
-| `~/.claude/settings.json`（hook / permissions） | `~/.codex/auth.json`・`~/.claude/.credentials.json` — 認証情報          |
+| `~/.claude/settings.json`（宣言したキーだけ）   | `~/.codex/auth.json`・`~/.claude/.credentials.json` — 認証情報          |
 | `~/.claude/CLAUDE.md`（apm の書き出しを止める） | `~/.codex/config.toml` — `projects.<絶対パス>` の信頼リスト＝マシン状態 |
-| `~/.codex/hooks.json`                           | `projects/` `sessions/` `history.jsonl` — セッション履歴                |
-| `~/.cursor/hooks.json`・`mcp.json`              | `plugins/` `extensions/` — ツールが管理する実体（サイズも大きい）       |
+| `~/.cursor/mcp.json`                            | `projects/` `sessions/` `history.jsonl` — セッション履歴                |
+|                                                 | `plugins/` `extensions/` — ツールが管理する実体（サイズも大きい）       |
+|                                                 | `~/.codex/hooks.json`・`~/.cursor/hooks.json`、settings.json の `hooks` と `statusLine` — Orca と rtk が書き込む |
+|                                                 | settings.json の `permissions.allow` — 承認の操作で端末ごとに溜まる     |
 | `~/.apm/apm.yml`・`~/.claude/output-styles/`    | `~/.claude/rules/`・`~/.claude/skills/`・`~/.codex/AGENTS.md` — apm が配置（下記） |
 
-新しいマシンでは `mise install` で `rtk` が入り、`chezmoi apply` で上記の設定が配置される。RTK の hook は設定ごと配られるので `rtk init` の再実行は不要（作り直したいときだけ `rtk init -g` / `--codex` / `--agent cursor`）。
+新しいマシンでは `mise install` で `rtk` が入り、`chezmoi apply` で上記の設定が配置される。フックは配られないので、rtk は `rtk init -g` / `--codex` / `--agent cursor` で、Orca は起動時に、それぞれ書き込む。
 
 #### 規約・skill・output style
 
