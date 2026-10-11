@@ -19,7 +19,12 @@
 # 親リポジトリの untracked には出ない。
 worktree-path = "{{ repo_path }}/.wt/{{ branch | sanitize }}"
 
+# シェル統合は .zshrc が eval しているので、wt にインストールを促されないようにする。
+skip-shell-integration-prompt = true
+
 # `wt list --json` の出力スキーマ。将来のリリースでデフォルトが 2 に変わる予定のため、
 # 警告を出さずに現時点で明示的に固定する（`wt config show` の migration 提案に従った）。
 [list]
 json-schema = 2
+
+[projects]
